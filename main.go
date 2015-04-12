@@ -1,13 +1,18 @@
 package main
 
+import (
+	"fmt"
+)
+
 type Person struct {
 	FirstName *string `validate:"empty,min(2),max(64)"`
 }
 
 func main() {
-	firstName := "Joe"
+	/*firstName := "Joe"
 	person := &Person{FirstName: &firstName}
-	Validate(person)
+	Validate(person)*/
+	fmt.Print(parseTag(`not_empty,min(2),max(32),regex(\w+)`))
 }
 
 /*
