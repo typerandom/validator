@@ -1,37 +1,9 @@
-// Copyright 2011 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
-// Originally from https://golang.org/src/encoding/json/tags.go?m=text
-
 package main
 
 import (
+	"bytes"
 	"reflect"
 )
-
-type taggedField struct {
-	Name  string
-	Value interface{}
-	Tag   string
-}
-
-func newTaggedField(name string, value interface{}, tag string) *taggedField {
-	return &taggedField{
-		Name:  name,
-		Value: value,
-		Tag:   tag,
-	}
-}
-
-type tag struct {
-	name    string
-	options string
-}
-
-func (this *tag) String() string {
-	return "{ name=" + this.name + ", options=" + this.options + " },"
-}
 
 const (
 	STATE_NAME          = 0
@@ -39,12 +11,29 @@ const (
 	STATE_OPTION_ESCAPE = 2
 )
 
+type tag struct {
+	Name    string
+	Options string
+}
+
+func (this *tag) String() string {
+	serializedOptions := this.Options
+
+	if len(serializedOptions) == 0 {
+		serializedOptions = "(none)"
+	} else {
+		serializedOptions = "'" + serializedOptions + "'"
+	}
+
+	return "{ name: '" + this.Name + "', options: " + serializedOptions + " }"
+}
+
 func parseTag(rawTag string) []*tag {
 	var tags []*tag
 
-	var buffer string
+	var buffer bytes.Buffer
 	var currentTag *tag
-	currentState := STATE_NAME
+	var currentState int
 
 	for _, char := range rawTag {
 		switch {
@@ -55,21 +44,21 @@ func parseTag(rawTag string) []*tag {
 			currentState = STATE_OPTION_ESCAPE*/
 		case char == '(':
 			currentState = STATE_OPTION
-			currentTag.name = buffer
-			buffer = ""
+			currentTag.Name = buffer.String()
+			buffer.Reset()
 		case currentState == STATE_OPTION && char == ')':
 			currentState = STATE_NAME
-			currentTag.options = buffer
-			buffer = ""
+			currentTag.Options = buffer.String()
+			buffer.Reset()
 		case currentState == STATE_NAME && char == ',':
 			currentState = STATE_NAME
 
-			if len(buffer) > 0 {
-				currentTag.name = buffer
-				buffer = ""
+			if buffer.Len() > 0 {
+				currentTag.Name = buffer.String()
+				buffer.Reset()
 			}
 
-			if len(currentTag.name) > 0 {
+			if len(currentTag.Name) > 0 {
 				tags = append(tags, currentTag)
 			}
 
@@ -78,19 +67,33 @@ func parseTag(rawTag string) []*tag {
 			if currentTag == nil {
 				currentTag = &tag{}
 			}
-			buffer += string(char)
+			buffer.WriteRune(char)
 		}
 	}
 
-	if len(buffer) > 0 {
-		currentTag.name = buffer
+	if buffer.Len() > 0 {
+		currentTag.Name = buffer.String()
 	}
 
-	if currentTag != nil && len(currentTag.name) > 0 {
+	if currentTag != nil && len(currentTag.Name) > 0 {
 		tags = append(tags, currentTag)
 	}
 
 	return tags
+}
+
+type taggedField struct {
+	Name  string
+	Value interface{}
+	Tags  []*tag
+}
+
+func newTaggedField(name string, value interface{}, tag string) *taggedField {
+	return &taggedField{
+		Name:  name,
+		Value: value,
+		Tags:  parseTag(tag),
+	}
 }
 
 func getTaggedFields(value interface{}, tagName string) []*taggedField {

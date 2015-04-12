@@ -1,49 +1,14 @@
 package main
 
-import (
-	"fmt"
-)
-
 type Person struct {
 	FirstName *string `validate:"empty,min(2),max(64)"`
 }
 
 func main() {
-	/*firstName := "Joe"
+	firstName := "J"
 	person := &Person{FirstName: &firstName}
-	Validate(person)*/
-	fmt.Print(parseTag(`not_empty,min(2),max(32),regex(\w+)`))
-}
 
-/*
-
-A validation library
-
-import (
-	validator "github.com/typerandom/cocoon"
-)
-
-validator.RegisterValidator("not_empty", func(value string, params string) error {
-
-})
-
-type Foo struct {
-	Id string `validate:"uuid"`
-	Name string `validate:"regex(a-z0-9)"`
-	Data string `validate:"func"`
-	CreatedAt string `validate:"time"`
-}
-
-// Write your own validator method.
-func (this *Foo) ValidateData(data string) error {
-	if len(data) == 0 {
-
+	if errors := Validate(person); errors != nil {
+		errors.PrintAll()
 	}
-	return nil
 }
-
-if errors := validator.Validate(foo); errors != nil {
-	return errors.First()
-}
-
-*/
