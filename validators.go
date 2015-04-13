@@ -2,8 +2,26 @@ package main
 
 import (
 	"errors"
+	"reflect"
 	"strconv"
 )
+
+type UnsupportedValueTypeError struct {
+	Type    reflect.Type
+	Message string
+}
+
+func NewUnsupportedValueTypeError(value interface{}) *UnsupportedValueTypeError {
+	valueType := reflect.TypeOf(value)
+	return &UnsupportedValueTypeError{
+		Type:    valueType,
+		Message: "Type '" + valueType.Name() + "' on field '%s' is not supported.",
+	}
+}
+
+func (this *UnsupportedValueTypeError) Error() string {
+	return this.Message
+}
 
 type ValidatorFn func(value interface{}, options string) error
 
@@ -33,7 +51,7 @@ func IsNotEmpty(value interface{}, options string) error {
 		return validateInt(&typedValue)
 	}
 
-	return nil
+	return NewUnsupportedValueTypeError(value)
 }
 
 func IsMin(value interface{}, options string) error {
@@ -68,7 +86,7 @@ func IsMin(value interface{}, options string) error {
 		return validateInt(&typedValue)
 	}
 
-	return nil
+	return NewUnsupportedValueTypeError(value)
 }
 
 func IsMax(value interface{}, options string) error {
@@ -103,7 +121,7 @@ func IsMax(value interface{}, options string) error {
 		return validateInt(&typedValue)
 	}
 
-	return nil
+	return NewUnsupportedValueTypeError(value)
 }
 
 func registerDefaultValidators() {
