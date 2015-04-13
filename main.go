@@ -1,12 +1,15 @@
 package main
 
 type Person struct {
-	FirstName *string `validate:"min(2),max(64)"`
-	Age       *int    `validate:"min(2),max(64)"`
+	FirstName string `validate:"not_empty,min(2),max(64)"`
+	Age       int    `validate:"not_empty,min(2),max(64)"`
 }
 
 func main() {
-	var firstName *string
+	var firstName string
+
+	firstName = "b1"
+
 	person := &Person{FirstName: firstName}
 
 	/*registerStructFieldValidators(reflect.TypeOf(person), "name", IsEmpty)

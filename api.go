@@ -1,5 +1,9 @@
 package main
 
+import (
+	"fmt"
+)
+
 func Register(name string, validator ValidatorFn) {
 	registerValidator(name, validator)
 }
@@ -14,11 +18,11 @@ func Validate(value interface{}) *Errors {
 					if errors == nil {
 						errors = NewErrors()
 					}
-					errors.Add(NewValidatorError(field.Name, tag.Name, err.Error()))
+					errors.Add(NewValidatorError(field.Name, tag.Name, fmt.Sprintf(err.Error(), field.Name)))
 				}
 			} else {
 				errors = NewErrors()
-				errors.Add(NewValidatorError(field.Name, tag.Name, "Validator '"+tag.Name+"' used on field '"+field.Name+"' does not exist."))
+				errors.Add(NewValidatorError(field.Name, tag.Name, fmt.Sprintf("Validator '%s' used on field '%s' does not exist.", tag.Name, field.Name)))
 				return errors
 			}
 		}

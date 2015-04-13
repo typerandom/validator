@@ -10,14 +10,14 @@ type ValidatorFn func(value interface{}, options string) error
 func IsNotEmpty(value interface{}, options string) error {
 	validateString := func(text *string) error {
 		if text == nil || len(*text) == 0 {
-			return errors.New("Value cannot be empty.")
+			return errors.New("%s cannot be empty.")
 		}
 		return nil
 	}
 
 	validateInt := func(num *int) error {
-		if num == nil {
-			return errors.New("Value cannot be empty.")
+		if num == nil || *num == 0 {
+			return errors.New("%s cannot be empty.")
 		}
 		return nil
 	}
@@ -29,6 +29,8 @@ func IsNotEmpty(value interface{}, options string) error {
 		return validateString(&typedValue)
 	case *int:
 		return validateInt(typedValue)
+	case int:
+		return validateInt(&typedValue)
 	}
 
 	return nil
@@ -43,14 +45,14 @@ func IsMin(value interface{}, options string) error {
 
 	validateString := func(text *string) error {
 		if text == nil || len(*text) < minValue {
-			return errors.New("Value is shorter than " + strconv.Itoa(minValue) + " characters.")
+			return errors.New("%s cannot be shorter than " + strconv.Itoa(minValue) + " characters.")
 		}
 		return nil
 	}
 
 	validateInt := func(num *int) error {
 		if num == nil || *num > minValue {
-			return errors.New("Value cannot be less than " + strconv.Itoa(minValue) + ".")
+			return errors.New("%s cannot be less than " + strconv.Itoa(minValue) + ".")
 		}
 		return nil
 	}
@@ -78,14 +80,14 @@ func IsMax(value interface{}, options string) error {
 
 	validateString := func(text *string) error {
 		if text != nil && len(*text) > minValue {
-			return errors.New("Value is longer than " + strconv.Itoa(minValue) + " characters.")
+			return errors.New("%s is longer than " + strconv.Itoa(minValue) + " characters.")
 		}
 		return nil
 	}
 
 	validateInt := func(num *int) error {
 		if num != nil && *num > minValue {
-			return errors.New("Value cannot be greater than " + strconv.Itoa(minValue) + ".")
+			return errors.New("%s cannot be greater than " + strconv.Itoa(minValue) + ".")
 		}
 		return nil
 	}
