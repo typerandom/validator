@@ -1,10 +1,7 @@
 package main
 
-func Register(name string, validator ValidatorStrategy) {
-	if validators == nil {
-		validators = make(map[string]ValidatorStrategy)
-	}
-	validators[name] = validator
+func Register(name string, validator ValidatorFn) {
+	registerValidator(name, validator)
 }
 
 func Validate(value interface{}) *Errors {
@@ -12,8 +9,8 @@ func Validate(value interface{}) *Errors {
 
 	for _, field := range getTaggedFields(value, "validate") {
 		for _, tag := range field.Tags {
-			if validator, err := getValidator(tag.Name); err == nil {
-				if err = validator(field.Value, tag.Options); err != nil {
+			if validate, err := getValidator(tag.Name); err == nil {
+				if err = validate(field.Value, tag.Options); err != nil {
 					if errors == nil {
 						errors = NewErrors()
 					}

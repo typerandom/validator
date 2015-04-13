@@ -96,6 +96,12 @@ func newTaggedField(name string, value interface{}, tag string) *taggedField {
 	}
 }
 
+type ValueContext struct {
+	Value interface{}
+	Type  reflect.Type
+	IsNil bool
+}
+
 func getTaggedFields(value interface{}, tagName string) []*taggedField {
 	var fields []*taggedField
 
