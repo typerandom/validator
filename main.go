@@ -1,8 +1,8 @@
 package main
 
 type Person struct {
-	FirstName string  `validate:"not_empty,min(2),max(64)"`
-	Age       float32 `validate:"not_empty,min(2),max(64)"`
+	FirstName string `validate:"not_empty,min(2),max(64)"`
+	Age       int    `validate:"not_empty,min(2),max(64)"`
 }
 
 func main() {

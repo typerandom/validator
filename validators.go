@@ -69,7 +69,7 @@ func IsMin(value interface{}, options string) error {
 	}
 
 	validateInt := func(num *int) error {
-		if num == nil || *num > minValue {
+		if num == nil || *num < minValue {
 			return errors.New("%s cannot be less than " + strconv.Itoa(minValue) + ".")
 		}
 		return nil
