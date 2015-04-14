@@ -42,6 +42,10 @@ func (this *Errors) First() *ValidatorError {
 	return this.Items[0]
 }
 
+func (this *Errors) Any() bool {
+	return len(this.Items) > 0
+}
+
 func (this *Errors) PrintAll() {
 	for _, err := range this.Items {
 		fmt.Println(err)

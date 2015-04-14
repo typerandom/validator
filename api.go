@@ -12,13 +12,18 @@ func Validate(value interface{}) *Errors {
 	var errors *Errors
 
 	for _, field := range getTaggedFields(value, "validate") {
+		context := NewValidatorContext()
+
 		for _, tag := range field.Tags {
 			if validate, err := getValidator(tag.Name); err == nil {
-				if err = validate(field.Value, tag.Options); err != nil {
+				if err = validate(context, field.Value, tag.Options); err != nil {
 					if errors == nil {
 						errors = NewErrors()
 					}
 					errors.Add(NewValidatorError(field.Name, tag.Name, fmt.Sprintf(err.Error(), field.Name)))
+				}
+				if context.StopValidate {
+					break
 				}
 			} else {
 				errors = NewErrors()
