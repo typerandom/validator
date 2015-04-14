@@ -7,16 +7,16 @@ import (
 
 // Global validator registry
 
-var validators map[string]ValidatorFn
+var validators map[string]ValidatorFilter
 
-func registerValidator(name string, validator ValidatorFn) {
+func registerValidator(name string, validator ValidatorFilter) {
 	if validators == nil {
-		validators = make(map[string]ValidatorFn)
+		validators = make(map[string]ValidatorFilter)
 	}
 	validators[name] = validator
 }
 
-func getValidator(name string) (ValidatorFn, error) {
+func getValidator(name string) (ValidatorFilter, error) {
 	if validators == nil {
 		registerDefaultValidators()
 	}
@@ -32,11 +32,11 @@ func getValidator(name string) (ValidatorFn, error) {
 
 // Type validator registry
 
-var structFieldValidatorRegistry map[reflect.Type]map[string][]ValidatorFn
+var structFieldValidatorRegistry map[reflect.Type]map[string][]ValidatorFilter
 
-func registerStructFieldValidators(structType reflect.Type, validators map[string][]ValidatorFn) {
+func registerStructFieldValidators(structType reflect.Type, validators map[string][]ValidatorFilter) {
 	if structFieldValidatorRegistry == nil {
-		structFieldValidatorRegistry = make(map[reflect.Type]map[string][]ValidatorFn)
+		structFieldValidatorRegistry = make(map[reflect.Type]map[string][]ValidatorFilter)
 	}
 
 	structFieldValidatorRegistry[structType] = validators
