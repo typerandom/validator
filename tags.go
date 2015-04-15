@@ -7,9 +7,10 @@ import (
 )
 
 const (
-	STATE_NAME          = 0
-	STATE_OPTION        = 1
-	STATE_OPTION_ESCAPE = 2
+	STATE_NAME              = 0
+	STATE_OPTION            = 1
+	STATE_OPTION_ESCAPE     = 2
+	STATE_OPTION_WHITESPACE = 3
 )
 
 type tag struct {
@@ -38,11 +39,12 @@ func parseTag(rawTag string) []*tag {
 
 	for _, char := range rawTag {
 		switch {
-		/*case currentState == STATE_OPTION_ESCAPE:
-			buffer += string(char)
+		case currentState == STATE_OPTION_ESCAPE:
+			buffer.WriteRune(char)
 			currentState = STATE_OPTION
+			break
 		case currentState == STATE_OPTION && char == '\\':
-			currentState = STATE_OPTION_ESCAPE*/
+			currentState = STATE_OPTION_ESCAPE
 		case char == '(':
 			currentState = STATE_OPTION
 			currentTag.Name = buffer.String()
@@ -53,8 +55,14 @@ func parseTag(rawTag string) []*tag {
 				currentTag.Options = append(currentTag.Options, buffer.String())
 				buffer.Reset()
 			}
+		case currentState == STATE_OPTION_WHITESPACE:
+			if char != ' ' && char != '	' {
+				currentState = STATE_OPTION
+				buffer.WriteRune(char)
+			}
 		case currentState == STATE_OPTION && char == ',':
 			if buffer.Len() > 0 {
+				currentState = STATE_OPTION_WHITESPACE
 				currentTag.Options = append(currentTag.Options, buffer.String())
 				buffer.Reset()
 			}
@@ -102,12 +110,6 @@ func newTaggedField(name string, value interface{}, tag string) *taggedField {
 	}
 }
 
-type ValueContext struct {
-	Value interface{}
-	Type  reflect.Type
-	IsNil bool
-}
-
 func getTaggedFields(value interface{}, tagName string) []*taggedField {
 	var fields []*taggedField
 
@@ -122,7 +124,7 @@ func getTaggedFields(value interface{}, tagName string) []*taggedField {
 		field := valueType.Field(i)
 		tagValue := field.Tag.Get(tagName)
 		if len(tagValue) > 0 {
-			fieldValue := reflect.Indirect(val).Field(i).Interface()
+			fieldValue := tryResolveInt64(reflect.Indirect(val).Field(i).Interface())
 			fields = append(fields, newTaggedField(field.Name, fieldValue, field.Tag.Get(tagName)))
 		}
 	}

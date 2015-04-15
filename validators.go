@@ -38,6 +38,10 @@ func NewValidatorContext(value interface{}) *ValidatorContext {
 type ValidatorFilter func(context *ValidatorContext, options []string) error
 
 func IsEmpty(context *ValidatorContext, options []string) error {
+	if len(options) > 0 {
+		return errors.New("Validator 'empty' does not support any arguments.")
+	}
+
 	validateString := func(text *string) error {
 		if text == nil || len(*text) == 0 {
 			context.StopValidate = true
@@ -45,7 +49,7 @@ func IsEmpty(context *ValidatorContext, options []string) error {
 		return nil
 	}
 
-	validateInt := func(num *int) error {
+	validateInt := func(num *int64) error {
 		if num == nil || *num == 0 {
 			context.StopValidate = true
 		}
@@ -57,9 +61,9 @@ func IsEmpty(context *ValidatorContext, options []string) error {
 		return validateString(typedValue)
 	case string:
 		return validateString(&typedValue)
-	case *int:
+	case *int64:
 		return validateInt(typedValue)
-	case int:
+	case int64:
 		return validateInt(&typedValue)
 	}
 
@@ -67,6 +71,10 @@ func IsEmpty(context *ValidatorContext, options []string) error {
 }
 
 func IsNotEmpty(context *ValidatorContext, options []string) error {
+	if len(options) > 0 {
+		return errors.New("Validator 'not_empty' does not support any arguments.")
+	}
+
 	validateString := func(text *string) error {
 		if text == nil || len(*text) == 0 {
 			return errors.New("{field} cannot be empty.")
@@ -74,7 +82,7 @@ func IsNotEmpty(context *ValidatorContext, options []string) error {
 		return nil
 	}
 
-	validateInt := func(num *int) error {
+	validateInt := func(num *int64) error {
 		if num == nil || *num == 0 {
 			return errors.New("{field} cannot be empty.")
 		}
@@ -86,9 +94,9 @@ func IsNotEmpty(context *ValidatorContext, options []string) error {
 		return validateString(typedValue)
 	case string:
 		return validateString(&typedValue)
-	case *int:
+	case *int64:
 		return validateInt(typedValue)
-	case int:
+	case int64:
 		return validateInt(&typedValue)
 	}
 
@@ -96,6 +104,10 @@ func IsNotEmpty(context *ValidatorContext, options []string) error {
 }
 
 func IsMin(context *ValidatorContext, options []string) error {
+	if len(options) != 1 {
+		return errors.New("Validator 'min' requires a single argument.")
+	}
+
 	minValue, err := strconv.Atoi(options[0])
 
 	if err != nil {
@@ -109,8 +121,8 @@ func IsMin(context *ValidatorContext, options []string) error {
 		return nil
 	}
 
-	validateInt := func(num *int) error {
-		if num == nil || *num < minValue {
+	validateInt := func(num *int64) error {
+		if num == nil || *num < int64(minValue) {
 			return errors.New("{field} cannot be less than " + strconv.Itoa(minValue) + ".")
 		}
 		return nil
@@ -121,9 +133,9 @@ func IsMin(context *ValidatorContext, options []string) error {
 		return validateString(typedValue)
 	case string:
 		return validateString(&typedValue)
-	case *int:
+	case *int64:
 		return validateInt(typedValue)
-	case int:
+	case int64:
 		return validateInt(&typedValue)
 	}
 
@@ -131,6 +143,10 @@ func IsMin(context *ValidatorContext, options []string) error {
 }
 
 func IsMax(context *ValidatorContext, options []string) error {
+	if len(options) != 1 {
+		return errors.New("Validator 'max' requires a single argument.")
+	}
+
 	minValue, err := strconv.Atoi(options[0])
 
 	if err != nil {
@@ -144,8 +160,8 @@ func IsMax(context *ValidatorContext, options []string) error {
 		return nil
 	}
 
-	validateInt := func(num *int) error {
-		if num != nil && *num > minValue {
+	validateInt := func(num *int64) error {
+		if num != nil && *num > int64(minValue) {
 			return errors.New("{field} cannot be greater than " + strconv.Itoa(minValue) + ".")
 		}
 		return nil
@@ -156,9 +172,9 @@ func IsMax(context *ValidatorContext, options []string) error {
 		return validateString(typedValue)
 	case string:
 		return validateString(&typedValue)
-	case *int:
+	case *int64:
 		return validateInt(typedValue)
-	case int:
+	case int64:
 		return validateInt(&typedValue)
 	}
 
@@ -166,6 +182,10 @@ func IsMax(context *ValidatorContext, options []string) error {
 }
 
 func IsLowerCase(context *ValidatorContext, options []string) error {
+	if len(options) > 0 {
+		return errors.New("Validator 'lowercase' does not support any arguments.")
+	}
+
 	validateString := func(text *string) error {
 		if text == nil || len(*text) == 0 {
 			return nil
@@ -191,6 +211,10 @@ func IsLowerCase(context *ValidatorContext, options []string) error {
 }
 
 func IsUpperCase(context *ValidatorContext, options []string) error {
+	if len(options) > 0 {
+		return errors.New("Validator 'uppercase' does not support any arguments.")
+	}
+
 	validateString := func(text *string) error {
 		if text == nil || len(*text) == 0 {
 			return nil
@@ -216,6 +240,10 @@ func IsUpperCase(context *ValidatorContext, options []string) error {
 }
 
 func IsNumeric(context *ValidatorContext, options []string) error {
+	if len(options) > 0 {
+		return errors.New("Validator 'numeric' does not support any arguments.")
+	}
+
 	validateString := func(text *string) error {
 		if text == nil || len(*text) == 0 {
 			return errors.New("{field} must be numeric.")
