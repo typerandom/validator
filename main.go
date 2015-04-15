@@ -1,14 +1,14 @@
 package main
 
 type Person struct {
-	FirstName string `validate:"empty,numeric,lowercase,min(2),max(64)"`
+	FirstName int `validate:"empty,min(2),max(64)"`
 	//Age       int    `validate:"min(2),max(64)"`
 }
 
 func main() {
-	var firstName string
+	var firstName int
 
-	firstName = "1"
+	firstName = 1
 
 	person := &Person{FirstName: firstName}
 

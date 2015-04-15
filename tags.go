@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"reflect"
+	"strings"
 )
 
 const (
@@ -13,11 +14,11 @@ const (
 
 type tag struct {
 	Name    string
-	Options string
+	Options []string
 }
 
 func (this *tag) String() string {
-	serializedOptions := this.Options
+	serializedOptions := strings.Join(this.Options, ", ")
 
 	if len(serializedOptions) == 0 {
 		serializedOptions = "(none)"
@@ -48,11 +49,16 @@ func parseTag(rawTag string) []*tag {
 			buffer.Reset()
 		case currentState == STATE_OPTION && char == ')':
 			currentState = STATE_NAME
-			currentTag.Options = buffer.String()
-			buffer.Reset()
+			if buffer.Len() > 0 {
+				currentTag.Options = append(currentTag.Options, buffer.String())
+				buffer.Reset()
+			}
+		case currentState == STATE_OPTION && char == ',':
+			if buffer.Len() > 0 {
+				currentTag.Options = append(currentTag.Options, buffer.String())
+				buffer.Reset()
+			}
 		case currentState == STATE_NAME && char == ',':
-			currentState = STATE_NAME
-
 			if buffer.Len() > 0 {
 				currentTag.Name = buffer.String()
 				buffer.Reset()
