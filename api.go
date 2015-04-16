@@ -18,8 +18,7 @@ func Validate(value interface{}) *Errors {
 
 		for _, tag := range field.Tags {
 			if tag.Name == "struct" {
-				valueType := reflect.ValueOf(field.Value)
-				if !valueType.IsNil() {
+				if !reflect.ValueOf(field.Value).IsNil() {
 					if subErrors := Validate(field.Value); subErrors != nil {
 						for _, subError := range subErrors.Items {
 							errors.Add(subError)
