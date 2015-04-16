@@ -12,11 +12,11 @@ type UnsupportedTypeError struct {
 	Message string
 }
 
-func NewUnsupportedTypeError(value interface{}) *UnsupportedTypeError {
+func NewUnsupportedTypeError(validatorName string, value interface{}) *UnsupportedTypeError {
 	valueType := reflect.TypeOf(value)
 	return &UnsupportedTypeError{
 		Type:    valueType,
-		Message: "Validator with name '" + valueType.Name() + "' on struct '{struct}' and field '{field}' is not supported.",
+		Message: "Validator with name '" + validatorName + "' on struct '{struct}' and field '{field}' is not supported.",
 	}
 }
 
@@ -65,9 +65,14 @@ func IsEmpty(context *ValidatorContext, options []string) error {
 		return validateInt(typedValue)
 	case int64:
 		return validateInt(&typedValue)
+	default:
+		if reflect.ValueOf(typedValue).IsNil() {
+			context.StopValidate = true
+			return nil
+		}
 	}
 
-	return NewUnsupportedTypeError(context.Value)
+	return NewUnsupportedTypeError("empty", context.Value)
 }
 
 func IsNotEmpty(context *ValidatorContext, options []string) error {
@@ -98,9 +103,16 @@ func IsNotEmpty(context *ValidatorContext, options []string) error {
 		return validateInt(typedValue)
 	case int64:
 		return validateInt(&typedValue)
+	default:
+		valueType := reflect.ValueOf(context.Value)
+		if valueType.IsNil() {
+			return errors.New("{field} cannot be empty.")
+		} else if valueType.Kind() == reflect.Ptr && valueType.Elem().Kind() == reflect.Struct {
+			return nil
+		}
 	}
 
-	return NewUnsupportedTypeError(context.Value)
+	return NewUnsupportedTypeError("not_empty", context.Value)
 }
 
 func IsMin(context *ValidatorContext, options []string) error {
@@ -139,7 +151,7 @@ func IsMin(context *ValidatorContext, options []string) error {
 		return validateInt(&typedValue)
 	}
 
-	return NewUnsupportedTypeError(context.Value)
+	return NewUnsupportedTypeError("min", context.Value)
 }
 
 func IsMax(context *ValidatorContext, options []string) error {
@@ -178,7 +190,7 @@ func IsMax(context *ValidatorContext, options []string) error {
 		return validateInt(&typedValue)
 	}
 
-	return NewUnsupportedTypeError(context.Value)
+	return NewUnsupportedTypeError("max", context.Value)
 }
 
 func IsLowerCase(context *ValidatorContext, options []string) error {
@@ -207,7 +219,7 @@ func IsLowerCase(context *ValidatorContext, options []string) error {
 		return validateString(&typedValue)
 	}
 
-	return NewUnsupportedTypeError(context.Value)
+	return NewUnsupportedTypeError("lowercase", context.Value)
 }
 
 func IsUpperCase(context *ValidatorContext, options []string) error {
@@ -236,7 +248,7 @@ func IsUpperCase(context *ValidatorContext, options []string) error {
 		return validateString(&typedValue)
 	}
 
-	return NewUnsupportedTypeError(context.Value)
+	return NewUnsupportedTypeError("uppercase", context.Value)
 }
 
 func IsNumeric(context *ValidatorContext, options []string) error {
@@ -267,7 +279,7 @@ func IsNumeric(context *ValidatorContext, options []string) error {
 		return validateString(&typedValue)
 	}
 
-	return NewUnsupportedTypeError(context.Value)
+	return NewUnsupportedTypeError("numeric", context.Value)
 }
 
 /*

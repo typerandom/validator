@@ -1,7 +1,12 @@
 package main
 
+type Hair struct {
+	Color string `validate:"not_empty,min(1),max(6),lowercase"`
+}
+
 type Person struct {
 	FirstName string `validate:"not_empty,min(1),max(6),lowercase"`
+	Hair      *Hair  `validate:"struct"`
 }
 
 func main() {
