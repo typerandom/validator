@@ -42,7 +42,6 @@ func parseTag(rawTag string) []*tag {
 		case currentState == STATE_OPTION_ESCAPE:
 			buffer.WriteRune(char)
 			currentState = STATE_OPTION
-			break
 		case currentState == STATE_OPTION && char == '\\':
 			currentState = STATE_OPTION_ESCAPE
 		case char == '(':
@@ -110,21 +109,31 @@ func newTaggedField(name string, value interface{}, tag string) *taggedField {
 	}
 }
 
-func getTaggedFields(value interface{}, tagName string) []*taggedField {
-	var fields []*taggedField
-
-	val := reflect.ValueOf(value)
-	valueType := val.Type()
+func reflectValue(value interface{}) (reflect.Type, reflect.Value) {
+	reflectValue := reflect.ValueOf(value)
+	valueType := reflectValue.Type()
 
 	if valueType.Kind() == reflect.Ptr {
 		valueType = valueType.Elem()
 	}
 
+	return valueType, reflect.Indirect(reflectValue)
+}
+
+func getTaggedFields(value interface{}, tagName string) []*taggedField {
+	var fields []*taggedField
+
+	valueType, reflectedValue := reflectValue(value)
+
 	for i := 0; i < valueType.NumField(); i++ {
 		field := valueType.Field(i)
-		tagValue := field.Tag.Get(tagName)
-		if len(tagValue) > 0 {
-			fieldValue := tryResolveInt64(reflect.Indirect(val).Field(i).Interface())
+		if tagValue := field.Tag.Get(tagName); tagValue != "" {
+			fieldValue, _, err := normalizeValue(reflectedValue.Field(i).Interface())
+
+			if err != nil {
+				panic(err)
+			}
+
 			fields = append(fields, newTaggedField(field.Name, fieldValue, field.Tag.Get(tagName)))
 		}
 	}
