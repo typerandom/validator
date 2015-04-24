@@ -97,11 +97,11 @@ func parseTag(rawTag string) []*tag {
 
 type taggedField struct {
 	Name  string
-	Value interface{}
+	Value *NormalizedValue
 	Tags  []*tag
 }
 
-func newTaggedField(name string, value interface{}, tag string) *taggedField {
+func newTaggedField(name string, value *NormalizedValue, tag string) *taggedField {
 	return &taggedField{
 		Name:  name,
 		Value: value,
@@ -128,13 +128,13 @@ func getTaggedFields(value interface{}, tagName string) []*taggedField {
 	for i := 0; i < valueType.NumField(); i++ {
 		field := valueType.Field(i)
 		if tagValue := field.Tag.Get(tagName); tagValue != "" {
-			fieldValue, _, err := normalizeValue(reflectedValue.Field(i).Interface())
+			val, err := normalizeValue(reflectedValue.Field(i).Interface())
 
 			if err != nil {
 				panic(err)
 			}
 
-			fields = append(fields, newTaggedField(field.Name, fieldValue, field.Tag.Get(tagName)))
+			fields = append(fields, newTaggedField(field.Name, val, field.Tag.Get(tagName)))
 		}
 	}
 

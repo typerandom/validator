@@ -5,11 +5,20 @@ import (
 	"reflect"
 )
 
-// If integer, then tries to resolve the value to either a int64 value or pointer.
-// If it fails to do that, then the original value is returned.
-// Note: This could have been done with reflection. But this is probably clearer and better performance wise.
-// ALSO: Note that floats will be truncated according to http://golang.org/ref/spec#Conversions (float -> int)
-func normalizeToInt64(value interface{}) (result interface{}, err error) {
+type NormalizedValue struct {
+	Value interface{}
+	IsNil bool
+}
+
+func NewNormalizedValue(value interface{}, isNil bool) *NormalizedValue {
+	return &NormalizedValue{
+		Value: value,
+		IsNil: isNil,
+	}
+}
+
+// Normalizes all numeric types to their int64 counterparts
+func normalizeNumeric(value interface{}) (result interface{}, err error) {
 	switch typedValue := value.(type) {
 	case int:
 		result = int64(typedValue)
@@ -19,6 +28,8 @@ func normalizeToInt64(value interface{}) (result interface{}, err error) {
 		result = int64(typedValue)
 	case int32:
 		result = int64(typedValue)
+	case int64:
+		result = typedValue
 	case uint:
 		result = int64(typedValue)
 	case uint8:
@@ -29,45 +40,53 @@ func normalizeToInt64(value interface{}) (result interface{}, err error) {
 		result = int64(typedValue)
 	case uint64:
 		result = int64(typedValue)
-	// Note that converting a float to int will discard any fraction.
-	// It's important that this effect is documented.
 	case float32:
-		result = int64(typedValue)
+		result = float64(typedValue)
 	case float64:
-		result = int64(typedValue)
+		result = typedValue
 	default:
 		err = errors.New("Unable to resolve value to integer type.")
 	}
-
 	return
 }
 
-// Check into http://stackoverflow.com/questions/18091562/how-to-get-underlying-value-from-a-reflect-value-in-golang
+func normalizeValue(value interface{}) (*NormalizedValue, error) {
+	isNil := false
 
-func normalizeValue(value interface{}) (interface{}, bool, error) {
 	valueType := reflect.ValueOf(value)
 
 	switch valueType.Kind() {
 	// Dereference the pointer and normalize that value
 	case reflect.Ptr:
+		// If it's a nil pointer then flag the value as nil, obtain the inner element and create/return a zero value for the type
 		if valueType.IsNil() {
-			return value, true, nil
+			isNil = true
+
+			innerType := reflect.TypeOf(value).Elem()
+			normalizedValue, err := normalizeValue(reflect.Zero(innerType).Interface())
+
+			if err != nil {
+				return nil, err
+			}
+
+			value = normalizedValue.Value
+			break
 		}
 
 		value = valueType.Elem().Interface()
 
 		return normalizeValue(value)
-	// Reflect all numeric types except reflect.Int64, since that is what we want to resolve to
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
+	// Normalize all numeric types to their 64-bit counterparts (i.e. int8 -> int64, float32 -> float64)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32:
 		var err error
 		var normalizedValue interface{}
 
-		if normalizedValue, err = normalizeToInt64(value); err != nil {
-			return nil, false, err
+		if normalizedValue, err = normalizeNumeric(value); err != nil {
+			return nil, err
 		}
 
 		value = normalizedValue
 	}
 
-	return value, false, nil
+	return NewNormalizedValue(value, isNil), nil
 }

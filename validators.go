@@ -26,12 +26,14 @@ func (this *UnsupportedTypeError) Error() string {
 
 type ValidatorContext struct {
 	Value        interface{}
+	IsNil        bool
 	StopValidate bool
 }
 
-func NewValidatorContext(value interface{}) *ValidatorContext {
+func NewValidatorContext(normalizedValue *NormalizedValue) *ValidatorContext {
 	return &ValidatorContext{
-		Value: value,
+		Value: normalizedValue.Value,
+		IsNil: normalizedValue.IsNil,
 	}
 }
 
@@ -42,31 +44,19 @@ func IsEmpty(context *ValidatorContext, options []string) error {
 		return errors.New("Validator 'empty' does not support any arguments.")
 	}
 
-	validateString := func(text *string) error {
-		if text == nil || len(*text) == 0 {
-			context.StopValidate = true
-		}
-		return nil
-	}
-
-	validateInt := func(num *int64) error {
-		if num == nil || *num == 0 {
-			context.StopValidate = true
-		}
-		return nil
-	}
-
 	switch typedValue := context.Value.(type) {
-	case *string:
-		return validateString(typedValue)
 	case string:
-		return validateString(&typedValue)
-	case *int64:
-		return validateInt(typedValue)
+		if context.IsNil || len(typedValue) == 0 {
+			context.StopValidate = true
+		}
+		return nil
 	case int64:
-		return validateInt(&typedValue)
+		if context.IsNil || typedValue == 0 {
+			context.StopValidate = true
+		}
+		return nil
 	default:
-		if reflect.ValueOf(typedValue).IsNil() {
+		if context.IsNil {
 			context.StopValidate = true
 			return nil
 		}
@@ -80,35 +70,25 @@ func IsNotEmpty(context *ValidatorContext, options []string) error {
 		return errors.New("Validator 'not_empty' does not support any arguments.")
 	}
 
-	validateString := func(text *string) error {
-		if text == nil || len(*text) == 0 {
-			return errors.New("{field} cannot be empty.")
-		}
-		return nil
-	}
-
-	validateInt := func(num *int64) error {
-		if num == nil || *num == 0 {
-			return errors.New("{field} cannot be empty.")
-		}
-		return nil
-	}
-
 	switch typedValue := context.Value.(type) {
-	case *string:
-		return validateString(typedValue)
 	case string:
-		return validateString(&typedValue)
-	case *int64:
-		return validateInt(typedValue)
-	case int64:
-		return validateInt(&typedValue)
-	default:
-		valueType := reflect.ValueOf(context.Value)
-		if valueType.IsNil() {
+		if context.IsNil || len(typedValue) == 0 {
 			return errors.New("{field} cannot be empty.")
-		} else if valueType.Kind() == reflect.Ptr && valueType.Elem().Kind() == reflect.Struct {
-			return nil
+		}
+		return nil
+	case int64:
+		if context.IsNil || typedValue == 0 {
+			return errors.New("{field} cannot be empty.")
+		}
+		return nil
+	case float64:
+		if context.IsNil || typedValue == 0 {
+			return errors.New("{field} cannot be empty.")
+		}
+		return nil
+	default:
+		if context.IsNil {
+			return errors.New("{field} cannot be empty.")
 		}
 	}
 
@@ -126,29 +106,22 @@ func IsMin(context *ValidatorContext, options []string) error {
 		return errors.New("Unable to parse 'min' validator value.")
 	}
 
-	validateString := func(text *string) error {
-		if text == nil || len(*text) < minValue {
+	switch typedValue := context.Value.(type) {
+	case string:
+		if context.IsNil || len(typedValue) < minValue {
 			return errors.New("{field} cannot be shorter than " + strconv.Itoa(minValue) + " characters.")
 		}
 		return nil
-	}
-
-	validateInt := func(num *int64) error {
-		if num == nil || *num < int64(minValue) {
+	case int64:
+		if context.IsNil || typedValue < int64(minValue) {
 			return errors.New("{field} cannot be less than " + strconv.Itoa(minValue) + ".")
 		}
 		return nil
-	}
-
-	switch typedValue := context.Value.(type) {
-	case *string:
-		return validateString(typedValue)
-	case string:
-		return validateString(&typedValue)
-	case *int64:
-		return validateInt(typedValue)
-	case int64:
-		return validateInt(&typedValue)
+	case float64:
+		if context.IsNil || typedValue < float64(minValue) {
+			return errors.New("{field} cannot be less than " + strconv.Itoa(minValue) + ".")
+		}
+		return nil
 	}
 
 	return NewUnsupportedTypeError("min", context.Value)
@@ -165,29 +138,22 @@ func IsMax(context *ValidatorContext, options []string) error {
 		return errors.New("Unable to parse 'max' validator value.")
 	}
 
-	validateString := func(text *string) error {
-		if text != nil && len(*text) > minValue {
+	switch typedValue := context.Value.(type) {
+	case string:
+		if !context.IsNil && len(typedValue) > minValue {
 			return errors.New("{field} is longer than " + strconv.Itoa(minValue) + " characters.")
 		}
 		return nil
-	}
-
-	validateInt := func(num *int64) error {
-		if num != nil && *num > int64(minValue) {
+	case int64:
+		if !context.IsNil && typedValue > int64(minValue) {
 			return errors.New("{field} cannot be greater than " + strconv.Itoa(minValue) + ".")
 		}
 		return nil
-	}
-
-	switch typedValue := context.Value.(type) {
-	case *string:
-		return validateString(typedValue)
-	case string:
-		return validateString(&typedValue)
-	case *int64:
-		return validateInt(typedValue)
-	case int64:
-		return validateInt(&typedValue)
+	case float64:
+		if !context.IsNil && typedValue > float64(minValue) {
+			return errors.New("{field} cannot be greater than " + strconv.Itoa(minValue) + ".")
+		}
+		return nil
 	}
 
 	return NewUnsupportedTypeError("max", context.Value)
@@ -198,25 +164,19 @@ func IsLowerCase(context *ValidatorContext, options []string) error {
 		return errors.New("Validator 'lowercase' does not support any arguments.")
 	}
 
-	validateString := func(text *string) error {
-		if text == nil || len(*text) == 0 {
+	switch typedValue := context.Value.(type) {
+	case string:
+		if context.IsNil || len(typedValue) == 0 {
 			return nil
 		}
 
-		for _, char := range *text {
+		for _, char := range typedValue {
 			if unicode.IsLetter(char) && !unicode.IsLower(char) {
 				return errors.New("{field} must be in lower case.")
 			}
 		}
 
 		return nil
-	}
-
-	switch typedValue := context.Value.(type) {
-	case *string:
-		return validateString(typedValue)
-	case string:
-		return validateString(&typedValue)
 	}
 
 	return NewUnsupportedTypeError("lowercase", context.Value)
@@ -227,25 +187,19 @@ func IsUpperCase(context *ValidatorContext, options []string) error {
 		return errors.New("Validator 'uppercase' does not support any arguments.")
 	}
 
-	validateString := func(text *string) error {
-		if text == nil || len(*text) == 0 {
+	switch typedValue := context.Value.(type) {
+	case string:
+		if context.IsNil || len(typedValue) == 0 {
 			return nil
 		}
 
-		for _, char := range *text {
+		for _, char := range typedValue {
 			if unicode.IsLetter(char) && !unicode.IsUpper(char) {
 				return errors.New("{field} must be in upper case.")
 			}
 		}
 
 		return nil
-	}
-
-	switch typedValue := context.Value.(type) {
-	case *string:
-		return validateString(typedValue)
-	case string:
-		return validateString(&typedValue)
 	}
 
 	return NewUnsupportedTypeError("uppercase", context.Value)
@@ -256,12 +210,13 @@ func IsNumeric(context *ValidatorContext, options []string) error {
 		return errors.New("Validator 'numeric' does not support any arguments.")
 	}
 
-	validateString := func(text *string) error {
-		if text == nil || len(*text) == 0 {
+	switch typedValue := context.Value.(type) {
+	case string:
+		if context.IsNil || len(typedValue) == 0 {
 			return errors.New("{field} must be numeric.")
 		}
 
-		value, err := strconv.ParseInt(*text, 10, 32)
+		value, err := strconv.ParseInt(typedValue, 10, 32)
 
 		if err != nil {
 			return errors.New("{field} must contain numbers only.")
@@ -270,13 +225,6 @@ func IsNumeric(context *ValidatorContext, options []string) error {
 		context.Value = value
 
 		return nil
-	}
-
-	switch typedValue := context.Value.(type) {
-	case *string:
-		return validateString(typedValue)
-	case string:
-		return validateString(&typedValue)
 	}
 
 	return NewUnsupportedTypeError("numeric", context.Value)
