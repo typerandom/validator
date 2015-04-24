@@ -62,8 +62,8 @@ func normalizeValue(value interface{}) (*NormalizedValue, error) {
 		if valueType.IsNil() {
 			isNil = true
 
-			innerType := reflect.TypeOf(value).Elem()
-			normalizedValue, err := normalizeValue(reflect.Zero(innerType).Interface())
+			value = reflect.Zero(reflect.TypeOf(value).Elem()).Interface()
+			normalizedValue, err := normalizeValue(value)
 
 			if err != nil {
 				return nil, err
