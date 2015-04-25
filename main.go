@@ -7,7 +7,7 @@ type Foo struct {
 type Person struct {
 	FirstName string  `validate:"min(15)"`
 	Age       float32 `validate:"min(15)"`
-	Foo       []Foo   `validate:"min(1),max(1)"`
+	Foo       []Foo   `validate:"min(1),max(2)"`
 }
 
 func main() {

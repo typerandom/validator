@@ -57,8 +57,7 @@ func validateAny(value interface{}, errors *Errors) {
 	if typedValue, ok := value.(*NormalizedValue); ok {
 		normalizedValue = typedValue
 	} else {
-		z, _ := normalizeValue(value, false)
-		normalizedValue = z
+		normalizedValue, _ = normalizeValue(value, false)
 	}
 
 	switch normalizedValue.OriginalKind {
