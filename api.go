@@ -10,7 +10,7 @@ func Register(name string, validator ValidatorFilter) {
 	registerValidator(name, validator)
 }
 
-func validateField(field *taggedField, normalizedValue *NormalizedValue, errors *Errors) {
+func validateField(field *reflectedField, normalizedValue *NormalizedValue, errors *Errors) {
 	context := NewValidatorContext(normalizedValue)
 
 	for _, tag := range field.Tags {
@@ -45,7 +45,7 @@ func validateMap(normalizedValue *NormalizedValue, errors *Errors) {
 }
 
 func validateStruct(normalizedValue *NormalizedValue, errors *Errors) {
-	for _, field := range getTaggedFields(normalizedValue.Value, "validate") {
+	for _, field := range getFields(normalizedValue.Value, "validate") {
 
 		normalizedFieldValue, err := normalizeValue(field.Value, false)
 

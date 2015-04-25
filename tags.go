@@ -95,23 +95,14 @@ func parseTag(rawTag string) []*tag {
 	return tags
 }
 
-type taggedField struct {
+type reflectedField struct {
 	Name  string
 	Value interface{}
 	Tags  []*tag
 }
 
-func (this *taggedField) HasTag(name string) bool {
-	for _, tag := range this.Tags {
-		if tag.Name == name {
-			return true
-		}
-	}
-	return false
-}
-
-func newTaggedField(name string, value interface{}, tag string) *taggedField {
-	return &taggedField{
+func newReflectedField(name string, value interface{}, tag string) *reflectedField {
+	return &reflectedField{
 		Name:  name,
 		Value: value,
 		Tags:  parseTag(tag),
@@ -129,15 +120,15 @@ func reflectValue(value interface{}) (reflect.Type, reflect.Value) {
 	return valueType, reflect.Indirect(reflectValue)
 }
 
-func getTaggedFields(value interface{}, tagName string) []*taggedField {
-	var fields []*taggedField
+func getFields(value interface{}, tagName string) []*reflectedField {
+	var fields []*reflectedField
 
 	valueType, reflectedValue := reflectValue(value)
 
 	for i := 0; i < valueType.NumField(); i++ {
 		field := valueType.Field(i)
 		tagValue := field.Tag.Get(tagName)
-		fields = append(fields, newTaggedField(field.Name, reflectedValue.Field(i).Interface(), tagValue))
+		fields = append(fields, newReflectedField(field.Name, reflectedValue.Field(i).Interface(), tagValue))
 	}
 
 	return fields

@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"reflect"
 )
 
 // Global validator registry
@@ -28,16 +27,4 @@ func getValidator(name string) (ValidatorFilter, error) {
 	}
 
 	return validator, nil
-}
-
-// Type validator registry
-
-var structFieldValidatorRegistry map[reflect.Type]map[string][]ValidatorFilter
-
-func registerStructFieldValidators(structType reflect.Type, validators map[string][]ValidatorFilter) {
-	if structFieldValidatorRegistry == nil {
-		structFieldValidatorRegistry = make(map[reflect.Type]map[string][]ValidatorFilter)
-	}
-
-	structFieldValidatorRegistry[structType] = validators
 }
