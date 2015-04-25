@@ -281,6 +281,10 @@ func NumericValidator(context *ValidatorContext, options []string) error {
 		context.Value = value
 
 		return nil
+	case int64:
+		return nil
+	case float64:
+		return nil
 	}
 
 	return NewUnsupportedTypeError("numeric", context.Value)
