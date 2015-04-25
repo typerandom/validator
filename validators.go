@@ -25,23 +25,27 @@ func (this *UnsupportedTypeError) Error() string {
 }
 
 type ValidatorContext struct {
+	Parent       interface{}
 	Value        interface{}
 	OriginalKind reflect.Kind
+	Field        *reflectedField
 	IsNil        bool
 	StopValidate bool
 }
 
-func NewValidatorContext(normalizedValue *NormalizedValue) *ValidatorContext {
+func NewValidatorContext(parent interface{}, normalizedValue *NormalizedValue, field *reflectedField) *ValidatorContext {
 	return &ValidatorContext{
+		Parent:       parent,
 		Value:        normalizedValue.Value,
 		OriginalKind: normalizedValue.OriginalKind,
+		Field:        field,
 		IsNil:        normalizedValue.IsNil,
 	}
 }
 
 type ValidatorFilter func(context *ValidatorContext, options []string) error
 
-func IsEmpty(context *ValidatorContext, options []string) error {
+func EmptyValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
 		return errors.New("Validator 'empty' does not support any arguments.")
 	}
@@ -78,7 +82,7 @@ func IsEmpty(context *ValidatorContext, options []string) error {
 	return nil
 }
 
-func IsNotEmpty(context *ValidatorContext, options []string) error {
+func NotEmptyValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
 		return errors.New("Validator 'not_empty' does not support any arguments.")
 	}
@@ -121,7 +125,7 @@ func IsNotEmpty(context *ValidatorContext, options []string) error {
 	return nil
 }
 
-func IsMin(context *ValidatorContext, options []string) error {
+func MinValidator(context *ValidatorContext, options []string) error {
 	if len(options) != 1 {
 		return errors.New("Validator 'min' requires a single argument.")
 	}
@@ -166,7 +170,7 @@ func IsMin(context *ValidatorContext, options []string) error {
 	return NewUnsupportedTypeError("min", context.Value)
 }
 
-func IsMax(context *ValidatorContext, options []string) error {
+func MaxValidator(context *ValidatorContext, options []string) error {
 	if len(options) != 1 {
 		return errors.New("Validator 'max' requires a single argument.")
 	}
@@ -211,7 +215,7 @@ func IsMax(context *ValidatorContext, options []string) error {
 	return NewUnsupportedTypeError("max", context.Value)
 }
 
-func IsLowerCase(context *ValidatorContext, options []string) error {
+func LowerCaseValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
 		return errors.New("Validator 'lowercase' does not support any arguments.")
 	}
@@ -234,7 +238,7 @@ func IsLowerCase(context *ValidatorContext, options []string) error {
 	return NewUnsupportedTypeError("lowercase", context.Value)
 }
 
-func IsUpperCase(context *ValidatorContext, options []string) error {
+func UpperCaseValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
 		return errors.New("Validator 'uppercase' does not support any arguments.")
 	}
@@ -257,7 +261,7 @@ func IsUpperCase(context *ValidatorContext, options []string) error {
 	return NewUnsupportedTypeError("uppercase", context.Value)
 }
 
-func IsNumeric(context *ValidatorContext, options []string) error {
+func NumericValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
 		return errors.New("Validator 'numeric' does not support any arguments.")
 	}
@@ -282,6 +286,40 @@ func IsNumeric(context *ValidatorContext, options []string) error {
 	return NewUnsupportedTypeError("numeric", context.Value)
 }
 
+func FuncValidator(context *ValidatorContext, options []string) error {
+	var funcName string
+
+	switch len(options) {
+	case 0:
+		funcName = "Validate" + context.Field.Name
+	case 1:
+		funcName = options[0]
+	default:
+		return errors.New("Validator 'func' does not support more than 1 argument.")
+	}
+
+	returnValues, err := CallMethod(context.Parent, funcName, context.Value)
+
+	if err != nil {
+		if err == InvalidMethodError {
+			return errors.New("Validation method '" + funcName + "' does not exist.")
+		}
+		return err
+	}
+
+	if len(returnValues) == 1 {
+		if returnValues[0] == nil {
+			return nil
+		} else if err, ok := returnValues[0].(error); ok {
+			return err
+		} else {
+			return errors.New("Invalid return value type. Must be error.")
+		}
+	}
+
+	return errors.New("Invalid number of return values.")
+}
+
 /*
 IsHex
 IsType
@@ -299,11 +337,12 @@ IsUUID
 IsNumeric*/
 
 func registerDefaultValidators() {
-	registerValidator("empty", IsEmpty)
-	registerValidator("not_empty", IsNotEmpty)
-	registerValidator("min", IsMin)
-	registerValidator("max", IsMax)
-	registerValidator("lowercase", IsLowerCase)
-	registerValidator("uppercase", IsUpperCase)
-	registerValidator("numeric", IsNumeric)
+	registerValidator("empty", EmptyValidator)
+	registerValidator("not_empty", NotEmptyValidator)
+	registerValidator("min", MinValidator)
+	registerValidator("max", MaxValidator)
+	registerValidator("lowercase", LowerCaseValidator)
+	registerValidator("uppercase", UpperCaseValidator)
+	registerValidator("numeric", NumericValidator)
+	registerValidator("func", FuncValidator)
 }

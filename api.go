@@ -10,26 +10,6 @@ func Register(name string, validator ValidatorFilter) {
 	registerValidator(name, validator)
 }
 
-func validateField(field *reflectedField, normalizedValue *NormalizedValue, errors *Errors) {
-	context := NewValidatorContext(normalizedValue)
-
-	for _, tag := range field.Tags {
-		if validate, err := getValidator(tag.Name); err == nil {
-			if err = validate(context, tag.Options); err != nil {
-				errors.Add(NewValidatorError(field.Name, tag.Name, strings.Replace(err.Error(), "{field}", field.Name, 1)))
-			}
-			if context.StopValidate {
-				break
-			}
-		} else {
-			errors.Add(NewValidatorError(field.Name, tag.Name, fmt.Sprintf("Validator '%s' used on field '%s' does not exist.", tag.Name, field.Name)))
-			break
-		}
-	}
-
-	validateAny(normalizedValue, errors)
-}
-
 func validateArray(normalizedValue *NormalizedValue, errors *Errors) {
 	valueType := reflect.ValueOf(normalizedValue.Value)
 	for i := 0; i < valueType.Len(); i++ {
@@ -54,7 +34,23 @@ func validateStruct(normalizedValue *NormalizedValue, errors *Errors) {
 			break
 		}
 
-		validateField(field, normalizedFieldValue, errors)
+		context := NewValidatorContext(normalizedValue.Value, normalizedFieldValue, field)
+
+		for _, tag := range field.Tags {
+			if validate, err := getValidator(tag.Name); err == nil {
+				if err = validate(context, tag.Options); err != nil {
+					errors.Add(NewValidatorError(field.Name, tag.Name, strings.Replace(err.Error(), "{field}", field.Name, 1)))
+				}
+				if context.StopValidate {
+					break
+				}
+			} else {
+				errors.Add(NewValidatorError(field.Name, tag.Name, fmt.Sprintf("Validator '%s' used on field '%s' does not exist.", tag.Name, field.Name)))
+				break
+			}
+		}
+
+		validateAny(context.Value, errors)
 	}
 }
 
