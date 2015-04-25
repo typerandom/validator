@@ -46,6 +46,14 @@ func (this *Errors) Any() bool {
 	return len(this.Items) > 0
 }
 
+func (this *Errors) AddFrom(errors *Errors) {
+	if errors != nil {
+		for _, item := range errors.Items {
+			this.Add(item)
+		}
+	}
+}
+
 func (this *Errors) PrintAll() {
 	for _, err := range this.Items {
 		fmt.Println(err)

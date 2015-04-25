@@ -6,19 +6,23 @@ import (
 )
 
 type NormalizedValue struct {
-	Value interface{}
-	IsNil bool
+	Value        interface{}
+	OriginalKind reflect.Kind
+	IsNil        bool
 }
 
-func NewNormalizedValue(value interface{}, isNil bool) *NormalizedValue {
+func NewNormalizedValue(value interface{}, originalKind reflect.Kind, isNil bool) *NormalizedValue {
 	return &NormalizedValue{
-		Value: value,
-		IsNil: isNil,
+		Value:        value,
+		OriginalKind: originalKind,
+		IsNil:        isNil,
 	}
 }
 
 // Normalizes all numeric types to their int64 counterparts
-func normalizeNumeric(value interface{}) (result interface{}, err error) {
+func normalizeNumeric(value interface{}) (result interface{}, kind reflect.Kind, err error) {
+	kind = reflect.Int64
+
 	switch typedValue := value.(type) {
 	case int:
 		result = int64(typedValue)
@@ -41,19 +45,21 @@ func normalizeNumeric(value interface{}) (result interface{}, err error) {
 	case uint64:
 		result = int64(typedValue)
 	case float32:
+		kind = reflect.Float64
 		result = float64(typedValue)
 	case float64:
+		kind = reflect.Float64
 		result = typedValue
 	default:
 		err = errors.New("Unable to resolve value to integer type.")
 	}
+
 	return
 }
 
-func normalizeValue(value interface{}) (*NormalizedValue, error) {
-	isNil := false
-
+func normalizeValue(value interface{}, isNil bool) (*NormalizedValue, error) {
 	valueType := reflect.ValueOf(value)
+	kind := valueType.Kind()
 
 	switch valueType.Kind() {
 	// Dereference the pointer and normalize that value
@@ -62,31 +68,29 @@ func normalizeValue(value interface{}) (*NormalizedValue, error) {
 		if valueType.IsNil() {
 			isNil = true
 
-			value = reflect.Zero(reflect.TypeOf(value).Elem()).Interface()
-			normalizedValue, err := normalizeValue(value)
+			innerElement := reflect.TypeOf(value).Elem()
+			kind = innerElement.Kind()
 
-			if err != nil {
-				return nil, err
-			}
-
-			value = normalizedValue.Value
-			break
+			value = reflect.Zero(innerElement).Interface()
+		} else {
+			value = valueType.Elem().Interface()
 		}
 
-		value = valueType.Elem().Interface()
+		return normalizeValue(value, isNil)
 
-		return normalizeValue(value)
 	// Normalize all numeric types to their 64-bit counterparts (i.e. int8 -> int64, float32 -> float64)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32:
 		var err error
+		var valueKind reflect.Kind
 		var normalizedValue interface{}
 
-		if normalizedValue, err = normalizeNumeric(value); err != nil {
+		if normalizedValue, valueKind, err = normalizeNumeric(value); err != nil {
 			return nil, err
 		}
 
 		value = normalizedValue
+		kind = valueKind
 	}
 
-	return NewNormalizedValue(value, isNil), nil
+	return NewNormalizedValue(value, kind, isNil), nil
 }

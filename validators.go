@@ -26,14 +26,16 @@ func (this *UnsupportedTypeError) Error() string {
 
 type ValidatorContext struct {
 	Value        interface{}
+	OriginalKind reflect.Kind
 	IsNil        bool
 	StopValidate bool
 }
 
 func NewValidatorContext(normalizedValue *NormalizedValue) *ValidatorContext {
 	return &ValidatorContext{
-		Value: normalizedValue.Value,
-		IsNil: normalizedValue.IsNil,
+		Value:        normalizedValue.Value,
+		OriginalKind: normalizedValue.OriginalKind,
+		IsNil:        normalizedValue.IsNil,
 	}
 }
 
@@ -55,14 +57,21 @@ func IsEmpty(context *ValidatorContext, options []string) error {
 			context.StopValidate = true
 		}
 		return nil
-	default:
-		if context.IsNil {
+	}
+
+	if context.IsNil {
+		context.StopValidate = true
+		return nil
+	}
+
+	switch context.OriginalKind {
+	case reflect.Array, reflect.Slice:
+		if reflect.ValueOf(context.Value).Len() == 0 {
 			context.StopValidate = true
-			return nil
 		}
 	}
 
-	return NewUnsupportedTypeError("empty", context.Value)
+	return nil
 }
 
 func IsNotEmpty(context *ValidatorContext, options []string) error {
@@ -92,7 +101,15 @@ func IsNotEmpty(context *ValidatorContext, options []string) error {
 		}
 	}
 
-	return NewUnsupportedTypeError("not_empty", context.Value)
+	switch context.OriginalKind {
+	case reflect.Array, reflect.Slice:
+		if reflect.ValueOf(context.Value).Len() == 0 {
+			return errors.New("{field} cannot be empty.")
+		}
+		return nil
+	}
+
+	return nil
 }
 
 func IsMin(context *ValidatorContext, options []string) error {
@@ -124,6 +141,14 @@ func IsMin(context *ValidatorContext, options []string) error {
 		return nil
 	}
 
+	switch context.OriginalKind {
+	case reflect.Array, reflect.Slice:
+		if reflect.ValueOf(context.Value).Len() < minValue {
+			return errors.New("{field} cannot contain less than " + strconv.Itoa(minValue) + " items.")
+		}
+		return nil
+	}
+
 	return NewUnsupportedTypeError("min", context.Value)
 }
 
@@ -132,7 +157,7 @@ func IsMax(context *ValidatorContext, options []string) error {
 		return errors.New("Validator 'max' requires a single argument.")
 	}
 
-	minValue, err := strconv.Atoi(options[0])
+	maxValue, err := strconv.Atoi(options[0])
 
 	if err != nil {
 		return errors.New("Unable to parse 'max' validator value.")
@@ -140,18 +165,26 @@ func IsMax(context *ValidatorContext, options []string) error {
 
 	switch typedValue := context.Value.(type) {
 	case string:
-		if !context.IsNil && len(typedValue) > minValue {
-			return errors.New("{field} is longer than " + strconv.Itoa(minValue) + " characters.")
+		if !context.IsNil && len(typedValue) > maxValue {
+			return errors.New("{field} is longer than " + strconv.Itoa(maxValue) + " characters.")
 		}
 		return nil
 	case int64:
-		if !context.IsNil && typedValue > int64(minValue) {
-			return errors.New("{field} cannot be greater than " + strconv.Itoa(minValue) + ".")
+		if !context.IsNil && typedValue > int64(maxValue) {
+			return errors.New("{field} cannot be greater than " + strconv.Itoa(maxValue) + ".")
 		}
 		return nil
 	case float64:
-		if !context.IsNil && typedValue > float64(minValue) {
-			return errors.New("{field} cannot be greater than " + strconv.Itoa(minValue) + ".")
+		if !context.IsNil && typedValue > float64(maxValue) {
+			return errors.New("{field} cannot be greater than " + strconv.Itoa(maxValue) + ".")
+		}
+		return nil
+	}
+
+	switch context.OriginalKind {
+	case reflect.Array, reflect.Slice:
+		if reflect.ValueOf(context.Value).Len() > maxValue {
+			return errors.New("{field} cannot contain more than " + strconv.Itoa(maxValue) + " items.")
 		}
 		return nil
 	}
