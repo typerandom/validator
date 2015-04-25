@@ -136,9 +136,8 @@ func getTaggedFields(value interface{}, tagName string) []*taggedField {
 
 	for i := 0; i < valueType.NumField(); i++ {
 		field := valueType.Field(i)
-		if tagValue := field.Tag.Get(tagName); tagValue != "" {
-			fields = append(fields, newTaggedField(field.Name, reflectedValue.Field(i).Interface(), field.Tag.Get(tagName)))
-		}
+		tagValue := field.Tag.Get(tagName)
+		fields = append(fields, newTaggedField(field.Name, reflectedValue.Field(i).Interface(), tagValue))
 	}
 
 	return fields

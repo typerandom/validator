@@ -5,19 +5,17 @@ type Foo struct {
 }
 
 type Person struct {
-	FirstName string         `validate:"min(15)"`
-	Age       float32        `validate:"min(15)"`
-	Foo       []Foo          `validate:"min(1),max(2)"`
-	Moo       map[string]Foo `validate:"min(0),max(1)"`
+	FirstName string  `validate:"min(15)"`
+	Age       float32 `validate:"min(15)"`
+	Moo       map[string][]Foo
 }
 
 func main() {
 	person := &Person{
 		FirstName: "Test Testersson",
 		Age:       15,
-		Foo: []Foo{
-			Foo{Something: "HHehhe"},
-			Foo{Something: "OHO"},
+		Moo: map[string][]Foo{
+			"test": []Foo{Foo{Something: "13"}},
 		},
 	}
 
