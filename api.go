@@ -37,6 +37,13 @@ func validateArray(normalizedValue *NormalizedValue, errors *Errors) {
 	}
 }
 
+func validateMap(normalizedValue *NormalizedValue, errors *Errors) {
+	valueType := reflect.ValueOf(normalizedValue.Value)
+	for _, key := range valueType.MapKeys() {
+		validateAny(valueType.MapIndex(key).Interface(), errors)
+	}
+}
+
 func validateStruct(normalizedValue *NormalizedValue, errors *Errors) {
 	for _, field := range getTaggedFields(normalizedValue.Value, "validate") {
 
@@ -63,6 +70,8 @@ func validateAny(value interface{}, errors *Errors) {
 	switch normalizedValue.OriginalKind {
 	case reflect.Array, reflect.Slice:
 		validateArray(normalizedValue, errors)
+	case reflect.Map:
+		validateMap(normalizedValue, errors)
 	case reflect.Struct:
 		validateStruct(normalizedValue, errors)
 	}

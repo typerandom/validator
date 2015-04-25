@@ -5,9 +5,10 @@ type Foo struct {
 }
 
 type Person struct {
-	FirstName string  `validate:"min(15)"`
-	Age       float32 `validate:"min(15)"`
-	Foo       []Foo   `validate:"min(1),max(2)"`
+	FirstName string         `validate:"min(15)"`
+	Age       float32        `validate:"min(15)"`
+	Foo       []Foo          `validate:"min(1),max(2)"`
+	Moo       map[string]Foo `validate:"min(0),max(1)"`
 }
 
 func main() {

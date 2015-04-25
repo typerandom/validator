@@ -46,27 +46,31 @@ func IsEmpty(context *ValidatorContext, options []string) error {
 		return errors.New("Validator 'empty' does not support any arguments.")
 	}
 
+	if context.IsNil {
+		context.StopValidate = true
+		return nil
+	}
+
 	switch typedValue := context.Value.(type) {
 	case string:
-		if context.IsNil || len(typedValue) == 0 {
+		if len(typedValue) == 0 {
 			context.StopValidate = true
 		}
 		return nil
 	case int64:
-		if context.IsNil || typedValue == 0 {
+		if typedValue == 0 {
 			context.StopValidate = true
 		}
-		return nil
-	}
-
-	if context.IsNil {
-		context.StopValidate = true
 		return nil
 	}
 
 	switch context.OriginalKind {
 	case reflect.Array, reflect.Slice:
 		if reflect.ValueOf(context.Value).Len() == 0 {
+			context.StopValidate = true
+		}
+	case reflect.Map:
+		if len(reflect.ValueOf(context.Value).MapKeys()) == 0 {
 			context.StopValidate = true
 		}
 	}
@@ -79,31 +83,36 @@ func IsNotEmpty(context *ValidatorContext, options []string) error {
 		return errors.New("Validator 'not_empty' does not support any arguments.")
 	}
 
+	if context.IsNil {
+		return errors.New("{field} cannot be empty.")
+	}
+
 	switch typedValue := context.Value.(type) {
 	case string:
-		if context.IsNil || len(typedValue) == 0 {
+		if len(typedValue) == 0 {
 			return errors.New("{field} cannot be empty.")
 		}
 		return nil
 	case int64:
-		if context.IsNil || typedValue == 0 {
+		if typedValue == 0 {
 			return errors.New("{field} cannot be empty.")
 		}
 		return nil
 	case float64:
-		if context.IsNil || typedValue == 0 {
+		if typedValue == 0 {
 			return errors.New("{field} cannot be empty.")
 		}
 		return nil
-	default:
-		if context.IsNil {
-			return errors.New("{field} cannot be empty.")
-		}
 	}
 
 	switch context.OriginalKind {
 	case reflect.Array, reflect.Slice:
 		if reflect.ValueOf(context.Value).Len() == 0 {
+			return errors.New("{field} cannot be empty.")
+		}
+		return nil
+	case reflect.Map:
+		if len(reflect.ValueOf(context.Value).MapKeys()) == 0 {
 			return errors.New("{field} cannot be empty.")
 		}
 		return nil
@@ -147,6 +156,11 @@ func IsMin(context *ValidatorContext, options []string) error {
 			return errors.New("{field} cannot contain less than " + strconv.Itoa(minValue) + " items.")
 		}
 		return nil
+	case reflect.Map:
+		if len(reflect.ValueOf(context.Value).MapKeys()) < minValue {
+			return errors.New("{field} cannot contain less than " + strconv.Itoa(minValue) + " keys.")
+		}
+		return nil
 	}
 
 	return NewUnsupportedTypeError("min", context.Value)
@@ -185,6 +199,11 @@ func IsMax(context *ValidatorContext, options []string) error {
 	case reflect.Array, reflect.Slice:
 		if reflect.ValueOf(context.Value).Len() > maxValue {
 			return errors.New("{field} cannot contain more than " + strconv.Itoa(maxValue) + " items.")
+		}
+		return nil
+	case reflect.Map:
+		if len(reflect.ValueOf(context.Value).MapKeys()) > maxValue {
+			return errors.New("{field} cannot contain more than " + strconv.Itoa(maxValue) + " keys.")
 		}
 		return nil
 	}
