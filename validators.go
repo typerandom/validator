@@ -33,14 +33,22 @@ type ValidatorContext struct {
 	StopValidate bool
 }
 
-func NewValidatorContext(parent interface{}, normalizedValue *NormalizedValue, field *reflectedField) *ValidatorContext {
-	return &ValidatorContext{
-		Parent:       parent,
-		Value:        normalizedValue.Value,
-		OriginalKind: normalizedValue.OriginalKind,
-		Field:        field,
-		IsNil:        normalizedValue.IsNil,
-	}
+func NewValidatorContext() *ValidatorContext {
+	return &ValidatorContext{}
+}
+
+func (this *ValidatorContext) SetParent(parent interface{}) {
+	this.Parent = parent
+}
+
+func (this *ValidatorContext) SetValue(value *NormalizedValue) {
+	this.Value = value.Value
+	this.OriginalKind = value.OriginalKind
+	this.IsNil = value.IsNil
+}
+
+func (this *ValidatorContext) SetField(field *reflectedField) {
+	this.Field = field
 }
 
 type ValidatorFilter func(context *ValidatorContext, options []string) error

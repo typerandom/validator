@@ -10,23 +10,22 @@ func Register(name string, validator ValidatorFilter) {
 	registerValidator(name, validator)
 }
 
-func validateArray(normalizedValue *NormalizedValue, errors *Errors) {
+func validateArray(context *ValidatorContext, normalizedValue *NormalizedValue, errors *Errors) {
 	valueType := reflect.ValueOf(normalizedValue.Value)
 	for i := 0; i < valueType.Len(); i++ {
-		validateAny(valueType.Index(i).Interface(), errors)
+		validateAny(context, valueType.Index(i).Interface(), errors)
 	}
 }
 
-func validateMap(normalizedValue *NormalizedValue, errors *Errors) {
+func validateMap(context *ValidatorContext, normalizedValue *NormalizedValue, errors *Errors) {
 	valueType := reflect.ValueOf(normalizedValue.Value)
 	for _, key := range valueType.MapKeys() {
-		validateAny(valueType.MapIndex(key).Interface(), errors)
+		validateAny(context, valueType.MapIndex(key).Interface(), errors)
 	}
 }
 
-func validateStruct(normalizedValue *NormalizedValue, errors *Errors) {
+func validateStruct(context *ValidatorContext, normalizedValue *NormalizedValue, errors *Errors) {
 	for _, field := range getFields(normalizedValue.Value, "validate") {
-
 		normalizedFieldValue, err := normalizeValue(field.Value, false)
 
 		if err != nil {
@@ -34,7 +33,8 @@ func validateStruct(normalizedValue *NormalizedValue, errors *Errors) {
 			break
 		}
 
-		context := NewValidatorContext(normalizedValue.Value, normalizedFieldValue, field)
+		context.SetField(field)
+		context.SetValue(normalizedFieldValue)
 
 		for _, tag := range field.Tags {
 			if validate, err := getValidator(tag.Name); err == nil {
@@ -50,11 +50,11 @@ func validateStruct(normalizedValue *NormalizedValue, errors *Errors) {
 			}
 		}
 
-		validateAny(context.Value, errors)
+		validateAny(context, context.Value, errors)
 	}
 }
 
-func validateAny(value interface{}, errors *Errors) {
+func validateAny(context *ValidatorContext, value interface{}, errors *Errors) {
 	var normalizedValue *NormalizedValue
 
 	if typedValue, ok := value.(*NormalizedValue); ok {
@@ -65,18 +65,20 @@ func validateAny(value interface{}, errors *Errors) {
 
 	switch normalizedValue.OriginalKind {
 	case reflect.Array, reflect.Slice:
-		validateArray(normalizedValue, errors)
+		validateArray(context, normalizedValue, errors)
 	case reflect.Map:
-		validateMap(normalizedValue, errors)
+		validateMap(context, normalizedValue, errors)
 	case reflect.Struct:
-		validateStruct(normalizedValue, errors)
+		context.SetParent(normalizedValue.Value)
+		validateStruct(context, normalizedValue, errors)
 	}
 }
 
 func Validate(value interface{}) *Errors {
 	errors := NewErrors()
+	context := NewValidatorContext()
 
-	validateAny(value, errors)
+	validateAny(context, value, errors)
 
 	return errors
 }
