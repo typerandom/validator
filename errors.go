@@ -1,29 +1,39 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 )
 
-func NewValidatorError(fieldName string, tagName string, message string) *ValidatorError {
+var UnsupportedTypeError = errors.New("Validator not supported.")
+
+func renderErrorMessage(field *reflectedField, tag *tag, message string) string {
+	message = strings.Replace(message, "{field}", field.Name, 1)
+	message = strings.Replace(message, "{tag}", tag.Name, 1)
+	return message
+}
+
+func newValidatorError(field *reflectedField, tag *tag, err error) *ValidatorError {
 	return &ValidatorError{
-		FieldName: fieldName,
-		TagName:   tagName,
-		Message:   message,
+		Field:   field,
+		Tag:     tag,
+		message: renderErrorMessage(field, tag, err.Error()),
 	}
 }
 
 type ValidatorError struct {
-	FieldName string
-	TagName   string
-	Message   string
+	Field   *reflectedField
+	Tag     *tag
+	message string
 }
 
 func (this *ValidatorError) String() string {
-	return "{ error: " + this.Message + "}"
+	return "{ error: " + this.message + "}"
 }
 
 func (this *ValidatorError) Error() string {
-	return this.Message
+	return this.message
 }
 
 func NewErrors() *Errors {
@@ -31,14 +41,14 @@ func NewErrors() *Errors {
 }
 
 type Errors struct {
-	Items []*ValidatorError
+	Items []error
 }
 
-func (this *Errors) Add(err *ValidatorError) {
+func (this *Errors) Add(err error) {
 	this.Items = append(this.Items, err)
 }
 
-func (this *Errors) First() *ValidatorError {
+func (this *Errors) First() error {
 	return this.Items[0]
 }
 

@@ -1,35 +1,43 @@
 package main
 
 import (
-	"fmt"
 	"reflect"
-	"strings"
 )
 
 func Register(name string, validator ValidatorFilter) {
 	registerValidator(name, validator)
 }
 
-func walkValidateArray(context *ValidatorContext, normalizedValue *NormalizedValue) {
-	valueType := reflect.ValueOf(normalizedValue.Value)
+func Validate(value interface{}) *Errors {
+	context := &ValidatorContext{
+		Errors: NewErrors(),
+	}
+
+	walkValidate(context, value)
+
+	return context.Errors
+}
+
+func walkValidateArray(context *ValidatorContext, normalized *normalizedValue) {
+	valueType := reflect.ValueOf(normalized.Value)
 	for i := 0; i < valueType.Len(); i++ {
 		walkValidate(context, valueType.Index(i).Interface())
 	}
 }
 
-func walkValidateMap(context *ValidatorContext, normalizedValue *NormalizedValue) {
-	valueType := reflect.ValueOf(normalizedValue.Value)
+func walkValidateMap(context *ValidatorContext, normalized *normalizedValue) {
+	valueType := reflect.ValueOf(normalized.Value)
 	for _, key := range valueType.MapKeys() {
 		walkValidate(context, valueType.MapIndex(key).Interface())
 	}
 }
 
-func walkValidateStruct(context *ValidatorContext, normalizedValue *NormalizedValue) {
-	for _, field := range getFields(normalizedValue.Value, "validate") {
+func walkValidateStruct(context *ValidatorContext, normalized *normalizedValue) {
+	for _, field := range getFields(normalized.Value, "validate") {
 		normalizedFieldValue, err := normalizeValue(field.Value, false)
 
 		if err != nil {
-			context.Errors.Add(NewValidatorError(field.Name, "MISSING_TAG_NAME", strings.Replace(err.Error(), "{field}", field.Name, 1)))
+			context.Errors.Add(newValidatorError(field, nil, err))
 			break
 		}
 
@@ -37,15 +45,18 @@ func walkValidateStruct(context *ValidatorContext, normalizedValue *NormalizedVa
 		context.SetValue(normalizedFieldValue)
 
 		for _, tag := range field.Tags {
-			if validate, err := getValidator(tag.Name); err == nil {
-				if err = validate(context, tag.Options); err != nil {
-					context.Errors.Add(NewValidatorError(field.Name, tag.Name, strings.Replace(err.Error(), "{field}", field.Name, 1)))
-				}
-				if context.StopValidate {
-					break
-				}
-			} else {
-				context.Errors.Add(NewValidatorError(field.Name, tag.Name, fmt.Sprintf("Validator '%s' used on field '%s' does not exist.", tag.Name, field.Name)))
+			validate, err := getValidator(tag.Name)
+
+			if err != nil {
+				context.Errors.Add(err)
+				break
+			}
+
+			if err = validate(context, tag.Options); err != nil {
+				context.Errors.Add(newValidatorError(field, tag, err))
+			}
+
+			if context.StopValidate {
 				break
 			}
 		}
@@ -55,29 +66,25 @@ func walkValidateStruct(context *ValidatorContext, normalizedValue *NormalizedVa
 }
 
 func walkValidate(context *ValidatorContext, value interface{}) {
-	var normalizedValue *NormalizedValue
+	var normalized *normalizedValue
 
-	if typedValue, ok := value.(*NormalizedValue); ok {
-		normalizedValue = typedValue
+	if typedValue, ok := value.(*normalizedValue); ok {
+		normalized = typedValue
 	} else {
-		normalizedValue, _ = normalizeValue(value, false)
+		var err error
+		normalized, err = normalizeValue(value, false)
+		if err != nil {
+			context.Errors.Add(err)
+		}
 	}
 
-	switch normalizedValue.OriginalKind {
+	switch normalized.OriginalKind {
 	case reflect.Array, reflect.Slice:
-		walkValidateArray(context, normalizedValue)
+		walkValidateArray(context, normalized)
 	case reflect.Map:
-		walkValidateMap(context, normalizedValue)
+		walkValidateMap(context, normalized)
 	case reflect.Struct:
-		context.SetParent(normalizedValue.Value)
-		walkValidateStruct(context, normalizedValue)
+		context.SetParent(normalized.Value)
+		walkValidateStruct(context, normalized)
 	}
-}
-
-func Validate(value interface{}) *Errors {
-	context := NewValidatorContext()
-
-	walkValidate(context, value)
-
-	return context.Errors
 }

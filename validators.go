@@ -7,23 +7,6 @@ import (
 	"unicode"
 )
 
-type UnsupportedTypeError struct {
-	Type    reflect.Type
-	Message string
-}
-
-func NewUnsupportedTypeError(validatorName string, value interface{}) *UnsupportedTypeError {
-	valueType := reflect.TypeOf(value)
-	return &UnsupportedTypeError{
-		Type:    valueType,
-		Message: "Validator with name '" + validatorName + "' on struct '{struct}' and field '{field}' is not supported.",
-	}
-}
-
-func (this *UnsupportedTypeError) Error() string {
-	return this.Message
-}
-
 type ValidatorContext struct {
 	Errors       *Errors
 	Parent       interface{}
@@ -34,20 +17,14 @@ type ValidatorContext struct {
 	StopValidate bool
 }
 
-func NewValidatorContext() *ValidatorContext {
-	return &ValidatorContext{
-		Errors: NewErrors(),
-	}
-}
-
 func (this *ValidatorContext) SetParent(parent interface{}) {
 	this.Parent = parent
 }
 
-func (this *ValidatorContext) SetValue(value *NormalizedValue) {
-	this.Value = value.Value
-	this.OriginalKind = value.OriginalKind
-	this.IsNil = value.IsNil
+func (this *ValidatorContext) SetValue(normalized *normalizedValue) {
+	this.Value = normalized.Value
+	this.OriginalKind = normalized.OriginalKind
+	this.IsNil = normalized.IsNil
 }
 
 func (this *ValidatorContext) SetField(field *reflectedField) {
@@ -56,9 +33,9 @@ func (this *ValidatorContext) SetField(field *reflectedField) {
 
 type ValidatorFilter func(context *ValidatorContext, options []string) error
 
-func EmptyValidator(context *ValidatorContext, options []string) error {
+func emptyValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
-		return errors.New("Validator 'empty' does not support any arguments.")
+		return errors.New("Validator 'empty' does not support arguments.")
 	}
 
 	if context.IsNil {
@@ -93,9 +70,9 @@ func EmptyValidator(context *ValidatorContext, options []string) error {
 	return nil
 }
 
-func NotEmptyValidator(context *ValidatorContext, options []string) error {
+func notEmptyValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
-		return errors.New("Validator 'not_empty' does not support any arguments.")
+		return errors.New("Validator 'not_empty' does not support arguments.")
 	}
 
 	if context.IsNil {
@@ -136,7 +113,7 @@ func NotEmptyValidator(context *ValidatorContext, options []string) error {
 	return nil
 }
 
-func MinValidator(context *ValidatorContext, options []string) error {
+func minValidator(context *ValidatorContext, options []string) error {
 	if len(options) != 1 {
 		return errors.New("Validator 'min' requires a single argument.")
 	}
@@ -178,10 +155,10 @@ func MinValidator(context *ValidatorContext, options []string) error {
 		return nil
 	}
 
-	return NewUnsupportedTypeError("min", context.Value)
+	return UnsupportedTypeError
 }
 
-func MaxValidator(context *ValidatorContext, options []string) error {
+func maxValidator(context *ValidatorContext, options []string) error {
 	if len(options) != 1 {
 		return errors.New("Validator 'max' requires a single argument.")
 	}
@@ -223,10 +200,10 @@ func MaxValidator(context *ValidatorContext, options []string) error {
 		return nil
 	}
 
-	return NewUnsupportedTypeError("max", context.Value)
+	return UnsupportedTypeError
 }
 
-func LowerCaseValidator(context *ValidatorContext, options []string) error {
+func lowerCaseValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
 		return errors.New("Validator 'lowercase' does not support any arguments.")
 	}
@@ -246,10 +223,10 @@ func LowerCaseValidator(context *ValidatorContext, options []string) error {
 		return nil
 	}
 
-	return NewUnsupportedTypeError("lowercase", context.Value)
+	return UnsupportedTypeError
 }
 
-func UpperCaseValidator(context *ValidatorContext, options []string) error {
+func upperCaseValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
 		return errors.New("Validator 'uppercase' does not support any arguments.")
 	}
@@ -269,10 +246,10 @@ func UpperCaseValidator(context *ValidatorContext, options []string) error {
 		return nil
 	}
 
-	return NewUnsupportedTypeError("uppercase", context.Value)
+	return UnsupportedTypeError
 }
 
-func NumericValidator(context *ValidatorContext, options []string) error {
+func numericValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
 		return errors.New("Validator 'numeric' does not support any arguments.")
 	}
@@ -298,10 +275,10 @@ func NumericValidator(context *ValidatorContext, options []string) error {
 		return nil
 	}
 
-	return NewUnsupportedTypeError("numeric", context.Value)
+	return UnsupportedTypeError
 }
 
-func FuncValidator(context *ValidatorContext, options []string) error {
+func funcValidator(context *ValidatorContext, options []string) error {
 	var funcName string
 
 	switch len(options) {
@@ -313,7 +290,7 @@ func FuncValidator(context *ValidatorContext, options []string) error {
 		return errors.New("Validator 'func' does not support more than 1 argument.")
 	}
 
-	returnValues, err := CallMethod(context.Parent, funcName, context.Value)
+	returnValues, err := callMethod(context.Parent, funcName, context.Value)
 
 	if err != nil {
 		if err == InvalidMethodError {
@@ -352,12 +329,12 @@ IsUUID
 IsNumeric*/
 
 func registerDefaultValidators() {
-	registerValidator("empty", EmptyValidator)
-	registerValidator("not_empty", NotEmptyValidator)
-	registerValidator("min", MinValidator)
-	registerValidator("max", MaxValidator)
-	registerValidator("lowercase", LowerCaseValidator)
-	registerValidator("uppercase", UpperCaseValidator)
-	registerValidator("numeric", NumericValidator)
-	registerValidator("func", FuncValidator)
+	registerValidator("empty", emptyValidator)
+	registerValidator("not_empty", notEmptyValidator)
+	registerValidator("min", minValidator)
+	registerValidator("max", maxValidator)
+	registerValidator("lowercase", lowerCaseValidator)
+	registerValidator("uppercase", upperCaseValidator)
+	registerValidator("numeric", numericValidator)
+	registerValidator("func", funcValidator)
 }
