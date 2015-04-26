@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"strconv"
+	"time"
 	"unicode"
 )
 
@@ -50,7 +51,7 @@ type ValidatorFilter func(context *ValidatorContext, options []string) error
 
 func emptyValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
-		return errors.New("Validator 'empty' does not support arguments.")
+		return errors.New("Validator 'empty' on field '{field}' does not support arguments.")
 	}
 
 	if context.IsNil {
@@ -85,7 +86,7 @@ func emptyValidator(context *ValidatorContext, options []string) error {
 
 func notEmptyValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
-		return errors.New("Validator 'not_empty' does not support arguments.")
+		return errors.New("Validator 'not_empty' on field '{field}' does not support arguments.")
 	}
 
 	if context.IsNil {
@@ -124,13 +125,13 @@ func notEmptyValidator(context *ValidatorContext, options []string) error {
 
 func minValidator(context *ValidatorContext, options []string) error {
 	if len(options) != 1 {
-		return errors.New("Validator 'min' requires a single argument.")
+		return errors.New("Validator 'min' on field '{field}' requires a single argument.")
 	}
 
 	minValue, err := strconv.Atoi(options[0])
 
 	if err != nil {
-		return errors.New("Unable to parse 'min' validator value.")
+		return errors.New("Unable to parse 'min' validator value on field '{field}'.")
 	}
 
 	switch typedValue := context.Value.(type) {
@@ -169,13 +170,13 @@ func minValidator(context *ValidatorContext, options []string) error {
 
 func maxValidator(context *ValidatorContext, options []string) error {
 	if len(options) != 1 {
-		return errors.New("Validator 'max' requires a single argument.")
+		return errors.New("Validator 'max' on field '{field}' requires a single argument.")
 	}
 
 	maxValue, err := strconv.Atoi(options[0])
 
 	if err != nil {
-		return errors.New("Unable to parse 'max' validator value.")
+		return errors.New("Unable to parse 'max' validator value on field '{field}'.")
 	}
 
 	switch typedValue := context.Value.(type) {
@@ -214,7 +215,7 @@ func maxValidator(context *ValidatorContext, options []string) error {
 
 func lowerCaseValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
-		return errors.New("Validator 'lowercase' does not support any arguments.")
+		return errors.New("Validator 'lowercase' on field '{field}' does not support any arguments.")
 	}
 
 	switch typedValue := context.Value.(type) {
@@ -237,7 +238,7 @@ func lowerCaseValidator(context *ValidatorContext, options []string) error {
 
 func upperCaseValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
-		return errors.New("Validator 'uppercase' does not support any arguments.")
+		return errors.New("Validator 'uppercase' on field '{field}' does not support any arguments.")
 	}
 
 	switch typedValue := context.Value.(type) {
@@ -260,7 +261,7 @@ func upperCaseValidator(context *ValidatorContext, options []string) error {
 
 func numericValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
-		return errors.New("Validator 'numeric' does not support any arguments.")
+		return errors.New("Validator 'numeric' on field '{field}' does not support any arguments.")
 	}
 
 	switch typedValue := context.Value.(type) {
@@ -287,6 +288,34 @@ func numericValidator(context *ValidatorContext, options []string) error {
 	return UnsupportedTypeError
 }
 
+func timeValidator(context *ValidatorContext, options []string) error {
+	switch typedValue := context.Value.(type) {
+	case string:
+		if len(options) != 1 {
+			return errors.New("Validator 'time' on field '{field}' requires a single argument.")
+		}
+
+		layout := options[0]
+
+		value, err := time.Parse(layout, typedValue)
+
+		if err != nil {
+			return errors.New("{field} must be a valid time.")
+		}
+
+		context.Value = value
+
+		return nil
+	case time.Time:
+		if len(options) != 0 {
+			return errors.New("Validator 'time' on field '{field}' does not support any arguments.")
+		}
+		return nil
+	}
+
+	return UnsupportedTypeError
+}
+
 func funcValidator(context *ValidatorContext, options []string) error {
 	var funcName string
 
@@ -296,14 +325,14 @@ func funcValidator(context *ValidatorContext, options []string) error {
 	case 1:
 		funcName = options[0]
 	default:
-		return errors.New("Validator 'func' does not support more than 1 argument.")
+		return errors.New("Validator 'func' on field '{field}' does not support more than 1 argument.")
 	}
 
 	returnValues, err := callMethod(context.Source, funcName, context)
 
 	if err != nil {
 		if err == InvalidMethodError {
-			return errors.New("Validation method '" + context.Field.Parent.FullName(funcName) + "' does not exist.")
+			return errors.New("Validation method '" + context.Field.Parent.FullName(funcName) + "' on field '{field}' does not exist.")
 		}
 		return err
 	}
@@ -329,5 +358,6 @@ func registerDefaultValidators() {
 	registerValidator("lowercase", lowerCaseValidator)
 	registerValidator("uppercase", upperCaseValidator)
 	registerValidator("numeric", numericValidator)
+	registerValidator("time", timeValidator)
 	registerValidator("func", funcValidator)
 }

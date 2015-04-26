@@ -30,6 +30,7 @@ func walkValidateStruct(context *ValidatorContext, normalized *normalizedValue, 
 		field.Parent = parentField
 
 		context.SetField(field)
+		context.SetSource(normalized.Value)
 		context.SetValue(normalizedFieldValue)
 
 		for _, tag := range field.Tags {
@@ -72,7 +73,6 @@ func walkValidate(context *ValidatorContext, value interface{}, parentField *ref
 	case reflect.Map:
 		walkValidateMap(context, normalized, parentField)
 	case reflect.Struct:
-		context.SetSource(normalized.Value)
 		walkValidateStruct(context, normalized, parentField)
 	}
 }

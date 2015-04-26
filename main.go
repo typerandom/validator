@@ -19,6 +19,7 @@ func (this *Foo) ValidateSomething(context *ValidatorContext) error {
 
 type Person struct {
 	FirstName string  `validate:"min(15)"`
+	CreatedAt string  `validate:"time(2006-01-02T15:04:05Z0700)"`
 	Age       float32 `validate:"min(15),func"`
 	Moo       map[string][]Foo
 }
@@ -35,6 +36,7 @@ func (this *Person) ValidateAge(context *ValidatorContext) error {
 func main() {
 	person := &Person{
 		FirstName: "Test Testersson",
+		CreatedAt: "2018-01-01T01:00:00.00Z",
 		Age:       18,
 		Moo: map[string][]Foo{
 			"test": []Foo{Foo{Something: "tes"}},

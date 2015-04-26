@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"reflect"
 	"strings"
+	"unicode"
 )
 
 const (
@@ -149,8 +150,10 @@ func getFields(value interface{}, tagName string) []*reflectedField {
 
 	for i := 0; i < valueType.NumField(); i++ {
 		field := valueType.Field(i)
-		tagValue := field.Tag.Get(tagName)
-		fields = append(fields, newReflectedField(field.Name, reflectedValue.Field(i).Interface(), tagValue))
+		if unicode.IsUpper(rune(field.Name[0])) { // only grab exported fields
+			tagValue := field.Tag.Get(tagName)
+			fields = append(fields, newReflectedField(field.Name, reflectedValue.Field(i).Interface(), tagValue))
+		}
 	}
 
 	return fields
