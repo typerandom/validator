@@ -11,7 +11,7 @@ type normalizedValue struct {
 	IsNil        bool
 }
 
-// Normalizes all numeric types to their int64 counterparts
+// Normalizes all numeric types to their 64-bit counterparts
 func normalizeNumeric(value interface{}) (result interface{}, kind reflect.Kind, err error) {
 	kind = reflect.Int64
 

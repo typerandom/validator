@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"reflect"
+	"regexp"
 	"strconv"
 	"time"
 	"unicode"
@@ -259,6 +260,30 @@ func upperCaseValidator(context *ValidatorContext, options []string) error {
 	return UnsupportedTypeError
 }
 
+func regexpValidator(context *ValidatorContext, options []string) error {
+	if len(options) != 1 {
+		return errors.New("Validator 'regexp' on field '{field}' requires a single argument.")
+	}
+
+	pattern := options[0]
+
+	if testValue, ok := context.Value.(string); ok {
+		matched, err := regexp.MatchString(pattern, testValue)
+
+		if err != nil {
+			return errors.New("Unexpected regexp error for validator field '{field}': " + err.Error())
+		}
+
+		if !matched {
+			return errors.New("{field} must match pattern '" + pattern + "'.")
+		}
+
+		return nil
+	}
+
+	return UnsupportedTypeError
+}
+
 func numericValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
 		return errors.New("Validator 'numeric' on field '{field}' does not support any arguments.")
@@ -357,6 +382,7 @@ func registerDefaultValidators() {
 	registerValidator("max", maxValidator)
 	registerValidator("lowercase", lowerCaseValidator)
 	registerValidator("uppercase", upperCaseValidator)
+	registerValidator("regexp", regexpValidator)
 	registerValidator("numeric", numericValidator)
 	registerValidator("time", timeValidator)
 	registerValidator("func", funcValidator)

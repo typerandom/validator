@@ -18,7 +18,7 @@ func (this *Foo) ValidateSomething(context *ValidatorContext) error {
 }
 
 type Person struct {
-	FirstName string  `validate:"min(15)"`
+	FirstName string  `validate:"min(15),regexp(Testo)"`
 	CreatedAt string  `validate:"time(2006-01-02T15:04:05Z0700)"`
 	Age       float32 `validate:"min(15),func"`
 	Moo       map[string][]Foo
