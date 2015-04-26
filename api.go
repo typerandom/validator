@@ -28,6 +28,7 @@ func walkValidateStruct(context *ValidatorContext, normalized *normalizedValue, 
 		}
 
 		field.Parent = parentField
+
 		context.SetField(field)
 		context.SetValue(normalizedFieldValue)
 
@@ -65,16 +66,13 @@ func walkValidate(context *ValidatorContext, value interface{}, parentField *ref
 		}
 	}
 
-	if parentField == nil {
-		parentField = &reflectedField{Value: normalized.Value}
-	}
-
 	switch normalized.OriginalKind {
 	case reflect.Array, reflect.Slice:
 		walkValidateArray(context, normalized, parentField)
 	case reflect.Map:
 		walkValidateMap(context, normalized, parentField)
 	case reflect.Struct:
+		context.SetSource(normalized.Value)
 		walkValidateStruct(context, normalized, parentField)
 	}
 }

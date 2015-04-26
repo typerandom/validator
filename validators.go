@@ -24,6 +24,7 @@ IsUUID*/
 
 type ValidatorContext struct {
 	Errors       *Errors
+	Source       interface{}
 	Value        interface{}
 	OriginalKind reflect.Kind
 	Field        *reflectedField
@@ -35,6 +36,10 @@ func (this *ValidatorContext) SetValue(normalized *normalizedValue) {
 	this.Value = normalized.Value
 	this.OriginalKind = normalized.OriginalKind
 	this.IsNil = normalized.IsNil
+}
+
+func (this *ValidatorContext) SetSource(source interface{}) {
+	this.Source = source
 }
 
 func (this *ValidatorContext) SetField(field *reflectedField) {
@@ -294,11 +299,11 @@ func funcValidator(context *ValidatorContext, options []string) error {
 		return errors.New("Validator 'func' does not support more than 1 argument.")
 	}
 
-	returnValues, err := callMethod(context.Field.Parent.Value, funcName, context.Value)
+	returnValues, err := callMethod(context.Source, funcName, context)
 
 	if err != nil {
 		if err == InvalidMethodError {
-			return errors.New("Validation method '" + context.Field.FullName() + "." + funcName + "' does not exist.")
+			return errors.New("Validation method '" + context.Field.Parent.FullName(funcName) + "' does not exist.")
 		}
 		return err
 	}
@@ -309,7 +314,7 @@ func funcValidator(context *ValidatorContext, options []string) error {
 		} else if err, ok := returnValues[0].(error); ok {
 			return errors.New(err.Error())
 		} else {
-			return errors.New("Invalid return value of validation method '" + context.Field.FullName() + "." + funcName + "'. Return value must be of type 'error'.")
+			return errors.New("Invalid return value of validation method '" + context.Field.Parent.FullName(funcName) + "'. Return value must be of type 'error'.")
 		}
 	}
 

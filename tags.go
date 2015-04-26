@@ -110,7 +110,7 @@ func newReflectedField(name string, value interface{}, tag string) *reflectedFie
 	}
 }
 
-func (this *reflectedField) FullName() string {
+func (this *reflectedField) FullName(postfix ...string) string {
 	fullName := this.Name
 	parent := this.Parent
 
@@ -119,6 +119,13 @@ func (this *reflectedField) FullName() string {
 			fullName = parent.Name + "." + fullName
 		}
 		parent = parent.Parent
+	}
+
+	if len(postfix) > 0 {
+		if len(fullName) > 0 {
+			fullName += "."
+		}
+		fullName += strings.Join(postfix, ".")
 	}
 
 	return fullName
