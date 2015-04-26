@@ -9,7 +9,7 @@ import (
 var UnsupportedTypeError = errors.New("Validator not supported.")
 
 func renderErrorMessage(field *reflectedField, tag *tag, message string) string {
-	message = strings.Replace(message, "{field}", field.Name, 1)
+	message = strings.Replace(message, "{field}", field.FullName(), 1)
 	message = strings.Replace(message, "{tag}", tag.Name, 1)
 	return message
 }

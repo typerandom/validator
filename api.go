@@ -4,35 +4,21 @@ import (
 	"reflect"
 )
 
-func Register(name string, validator ValidatorFilter) {
-	registerValidator(name, validator)
-}
-
-func Validate(value interface{}) *Errors {
-	context := &ValidatorContext{
-		Errors: NewErrors(),
-	}
-
-	walkValidate(context, value)
-
-	return context.Errors
-}
-
-func walkValidateArray(context *ValidatorContext, normalized *normalizedValue) {
+func walkValidateArray(context *ValidatorContext, normalized *normalizedValue, parentField *reflectedField) {
 	valueType := reflect.ValueOf(normalized.Value)
 	for i := 0; i < valueType.Len(); i++ {
-		walkValidate(context, valueType.Index(i).Interface())
+		walkValidate(context, valueType.Index(i).Interface(), parentField)
 	}
 }
 
-func walkValidateMap(context *ValidatorContext, normalized *normalizedValue) {
+func walkValidateMap(context *ValidatorContext, normalized *normalizedValue, parentField *reflectedField) {
 	valueType := reflect.ValueOf(normalized.Value)
 	for _, key := range valueType.MapKeys() {
-		walkValidate(context, valueType.MapIndex(key).Interface())
+		walkValidate(context, valueType.MapIndex(key).Interface(), parentField)
 	}
 }
 
-func walkValidateStruct(context *ValidatorContext, normalized *normalizedValue) {
+func walkValidateStruct(context *ValidatorContext, normalized *normalizedValue, parentField *reflectedField) {
 	for _, field := range getFields(normalized.Value, "validate") {
 		normalizedFieldValue, err := normalizeValue(field.Value, false)
 
@@ -41,6 +27,7 @@ func walkValidateStruct(context *ValidatorContext, normalized *normalizedValue) 
 			break
 		}
 
+		field.Parent = parentField
 		context.SetField(field)
 		context.SetValue(normalizedFieldValue)
 
@@ -61,11 +48,11 @@ func walkValidateStruct(context *ValidatorContext, normalized *normalizedValue) 
 			}
 		}
 
-		walkValidate(context, context.Value)
+		walkValidate(context, context.Value, field)
 	}
 }
 
-func walkValidate(context *ValidatorContext, value interface{}) {
+func walkValidate(context *ValidatorContext, value interface{}, parentField *reflectedField) {
 	var normalized *normalizedValue
 
 	if typedValue, ok := value.(*normalizedValue); ok {
@@ -78,13 +65,30 @@ func walkValidate(context *ValidatorContext, value interface{}) {
 		}
 	}
 
+	if parentField == nil {
+		parentField = &reflectedField{Value: normalized.Value}
+	}
+
 	switch normalized.OriginalKind {
 	case reflect.Array, reflect.Slice:
-		walkValidateArray(context, normalized)
+		walkValidateArray(context, normalized, parentField)
 	case reflect.Map:
-		walkValidateMap(context, normalized)
+		walkValidateMap(context, normalized, parentField)
 	case reflect.Struct:
-		context.SetParent(normalized.Value)
-		walkValidateStruct(context, normalized)
+		walkValidateStruct(context, normalized, parentField)
 	}
+}
+
+func Register(name string, validator ValidatorFilter) {
+	registerValidator(name, validator)
+}
+
+func Validate(value interface{}) *Errors {
+	context := &ValidatorContext{
+		Errors: NewErrors(),
+	}
+
+	walkValidate(context, value, nil)
+
+	return context.Errors
 }

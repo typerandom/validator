@@ -7,18 +7,28 @@ import (
 	"unicode"
 )
 
+/*
+IsHex
+IsType
+IsISO8601
+IsUnixTime
+IsEmail
+IsUrl
+IsFilePath
+IsType				type(string)
+IsInteger
+IsDecimal
+IsIP
+IsRegexMatch
+IsUUID*/
+
 type ValidatorContext struct {
 	Errors       *Errors
-	Parent       interface{}
 	Value        interface{}
 	OriginalKind reflect.Kind
 	Field        *reflectedField
 	IsNil        bool
 	StopValidate bool
-}
-
-func (this *ValidatorContext) SetParent(parent interface{}) {
-	this.Parent = parent
 }
 
 func (this *ValidatorContext) SetValue(normalized *normalizedValue) {
@@ -48,12 +58,10 @@ func emptyValidator(context *ValidatorContext, options []string) error {
 		if len(typedValue) == 0 {
 			context.StopValidate = true
 		}
-		return nil
 	case int64:
 		if typedValue == 0 {
 			context.StopValidate = true
 		}
-		return nil
 	}
 
 	switch context.OriginalKind {
@@ -84,17 +92,14 @@ func notEmptyValidator(context *ValidatorContext, options []string) error {
 		if len(typedValue) == 0 {
 			return errors.New("{field} cannot be empty.")
 		}
-		return nil
 	case int64:
 		if typedValue == 0 {
 			return errors.New("{field} cannot be empty.")
 		}
-		return nil
 	case float64:
 		if typedValue == 0 {
 			return errors.New("{field} cannot be empty.")
 		}
-		return nil
 	}
 
 	switch context.OriginalKind {
@@ -107,7 +112,6 @@ func notEmptyValidator(context *ValidatorContext, options []string) error {
 		if len(reflect.ValueOf(context.Value).MapKeys()) == 0 {
 			return errors.New("{field} cannot be empty.")
 		}
-		return nil
 	}
 
 	return nil
@@ -290,11 +294,11 @@ func funcValidator(context *ValidatorContext, options []string) error {
 		return errors.New("Validator 'func' does not support more than 1 argument.")
 	}
 
-	returnValues, err := callMethod(context.Parent, funcName, context.Value)
+	returnValues, err := callMethod(context.Field.Parent.Value, funcName, context.Value)
 
 	if err != nil {
 		if err == InvalidMethodError {
-			return errors.New("Validation method '" + funcName + "' does not exist.")
+			return errors.New("Validation method '" + context.Field.FullName() + "." + funcName + "' does not exist.")
 		}
 		return err
 	}
@@ -303,30 +307,14 @@ func funcValidator(context *ValidatorContext, options []string) error {
 		if returnValues[0] == nil {
 			return nil
 		} else if err, ok := returnValues[0].(error); ok {
-			return err
+			return errors.New(err.Error())
 		} else {
-			return errors.New("Invalid return value type. Must be error.")
+			return errors.New("Invalid return value of validation method '" + context.Field.FullName() + "." + funcName + "'. Return value must be of type 'error'.")
 		}
 	}
 
-	return errors.New("Invalid number of return values.")
+	return UnsupportedTypeError
 }
-
-/*
-IsHex
-IsType
-IsISO8601
-IsUnixTime
-IsEmail
-IsUrl
-IsFilePath
-IsType				type(string)
-IsInteger
-IsDecimal
-IsIP
-IsRegexMatch
-IsUUID
-IsNumeric*/
 
 func registerDefaultValidators() {
 	registerValidator("empty", emptyValidator)

@@ -96,9 +96,10 @@ func parseTag(rawTag string) []*tag {
 }
 
 type reflectedField struct {
-	Name  string
-	Value interface{}
-	Tags  []*tag
+	Parent *reflectedField
+	Name   string
+	Value  interface{}
+	Tags   []*tag
 }
 
 func newReflectedField(name string, value interface{}, tag string) *reflectedField {
@@ -107,6 +108,20 @@ func newReflectedField(name string, value interface{}, tag string) *reflectedFie
 		Value: value,
 		Tags:  parseTag(tag),
 	}
+}
+
+func (this *reflectedField) FullName() string {
+	fullName := this.Name
+	parent := this.Parent
+
+	for parent != nil {
+		if len(parent.Name) > 0 {
+			fullName = parent.Name + "." + fullName
+		}
+		parent = parent.Parent
+	}
+
+	return fullName
 }
 
 func reflectValue(value interface{}) (reflect.Type, reflect.Value) {

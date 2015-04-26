@@ -14,7 +14,7 @@ type Person struct {
 	Moo       map[string][]Foo
 }
 
-func (this *Person) ValidatseAge(value interface{}) error {
+func (this *Person) ValidateAge(value interface{}) error {
 	if typedAge, ok := value.(float64); ok {
 		if typedAge < 18 {
 			return errors.New("Age cannot be less than 18.")
