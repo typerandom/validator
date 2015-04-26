@@ -25,6 +25,7 @@ func (this *UnsupportedTypeError) Error() string {
 }
 
 type ValidatorContext struct {
+	Errors       *Errors
 	Parent       interface{}
 	Value        interface{}
 	OriginalKind reflect.Kind
@@ -34,7 +35,9 @@ type ValidatorContext struct {
 }
 
 func NewValidatorContext() *ValidatorContext {
-	return &ValidatorContext{}
+	return &ValidatorContext{
+		Errors: NewErrors(),
+	}
 }
 
 func (this *ValidatorContext) SetParent(parent interface{}) {
