@@ -10,21 +10,21 @@ func Register(name string, validator ValidatorFilter) {
 	registerValidator(name, validator)
 }
 
-func validateArray(context *ValidatorContext, normalizedValue *NormalizedValue, errors *Errors) {
+func walkValidateArray(context *ValidatorContext, normalizedValue *NormalizedValue, errors *Errors) {
 	valueType := reflect.ValueOf(normalizedValue.Value)
 	for i := 0; i < valueType.Len(); i++ {
-		validateAny(context, valueType.Index(i).Interface(), errors)
+		walkValidate(context, valueType.Index(i).Interface(), errors)
 	}
 }
 
-func validateMap(context *ValidatorContext, normalizedValue *NormalizedValue, errors *Errors) {
+func walkValidateMap(context *ValidatorContext, normalizedValue *NormalizedValue, errors *Errors) {
 	valueType := reflect.ValueOf(normalizedValue.Value)
 	for _, key := range valueType.MapKeys() {
-		validateAny(context, valueType.MapIndex(key).Interface(), errors)
+		walkValidate(context, valueType.MapIndex(key).Interface(), errors)
 	}
 }
 
-func validateStruct(context *ValidatorContext, normalizedValue *NormalizedValue, errors *Errors) {
+func walkValidateStruct(context *ValidatorContext, normalizedValue *NormalizedValue, errors *Errors) {
 	for _, field := range getFields(normalizedValue.Value, "validate") {
 		normalizedFieldValue, err := normalizeValue(field.Value, false)
 
@@ -50,11 +50,11 @@ func validateStruct(context *ValidatorContext, normalizedValue *NormalizedValue,
 			}
 		}
 
-		validateAny(context, context.Value, errors)
+		walkValidate(context, context.Value, errors)
 	}
 }
 
-func validateAny(context *ValidatorContext, value interface{}, errors *Errors) {
+func walkValidate(context *ValidatorContext, value interface{}, errors *Errors) {
 	var normalizedValue *NormalizedValue
 
 	if typedValue, ok := value.(*NormalizedValue); ok {
@@ -65,12 +65,12 @@ func validateAny(context *ValidatorContext, value interface{}, errors *Errors) {
 
 	switch normalizedValue.OriginalKind {
 	case reflect.Array, reflect.Slice:
-		validateArray(context, normalizedValue, errors)
+		walkValidateArray(context, normalizedValue, errors)
 	case reflect.Map:
-		validateMap(context, normalizedValue, errors)
+		walkValidateMap(context, normalizedValue, errors)
 	case reflect.Struct:
 		context.SetParent(normalizedValue.Value)
-		validateStruct(context, normalizedValue, errors)
+		walkValidateStruct(context, normalizedValue, errors)
 	}
 }
 
@@ -78,7 +78,7 @@ func Validate(value interface{}) *Errors {
 	errors := NewErrors()
 	context := NewValidatorContext()
 
-	validateAny(context, value, errors)
+	walkValidate(context, value, errors)
 
 	return errors
 }
