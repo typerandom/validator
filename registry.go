@@ -6,6 +6,8 @@ import (
 
 // Global validator registry
 
+type ValidatorFilter func(context *ValidatorContext, options []string) error
+
 var validators map[string]ValidatorFilter
 
 func registerValidator(name string, validator ValidatorFilter) {

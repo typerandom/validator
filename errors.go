@@ -36,10 +36,6 @@ func (this *ValidatorError) Error() string {
 	return this.message
 }
 
-func NewErrors() *Errors {
-	return &Errors{}
-}
-
 type Errors struct {
 	Items []error
 }

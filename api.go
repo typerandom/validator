@@ -23,26 +23,26 @@ func walkValidateStruct(context *ValidatorContext, normalized *normalizedValue, 
 		normalizedFieldValue, err := normalizeValue(field.Value, false)
 
 		if err != nil {
-			context.Errors.Add(newValidatorError(field, nil, err))
+			context.errors.Add(newValidatorError(field, nil, err))
 			break
 		}
 
 		field.Parent = parentField
 
-		context.SetField(field)
-		context.SetSource(normalized.Value)
-		context.SetValue(normalizedFieldValue)
+		context.setField(field)
+		context.setSource(normalized.Value)
+		context.setValue(normalizedFieldValue)
 
 		for _, tag := range field.Tags {
 			validate, err := getValidator(tag.Name)
 
 			if err != nil {
-				context.Errors.Add(err)
+				context.errors.Add(err)
 				break
 			}
 
 			if err = validate(context, tag.Options); err != nil {
-				context.Errors.Add(newValidatorError(field, tag, err))
+				context.errors.Add(newValidatorError(field, tag, err))
 			}
 
 			if context.StopValidate {
@@ -63,7 +63,7 @@ func walkValidate(context *ValidatorContext, value interface{}, parentField *ref
 		var err error
 		normalized, err = normalizeValue(value, false)
 		if err != nil {
-			context.Errors.Add(err)
+			context.errors.Add(err)
 		}
 	}
 
@@ -126,11 +126,11 @@ func Validate(value interface{}) *Errors {
 	assertGlobalInit()
 
 	context := &ValidatorContext{
-		Errors: NewErrors(),
-		Locale: globalLocale,
+		errors: &Errors{},
+		locale: globalLocale,
 	}
 
 	walkValidate(context, value, nil)
 
-	return context.Errors
+	return context.errors
 }

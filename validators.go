@@ -27,32 +27,33 @@ IsRegexMatch
 IsUUID*/
 
 type ValidatorContext struct {
-	Locale       *locale
-	Errors       *Errors
-	Source       interface{}
 	Value        interface{}
 	OriginalKind reflect.Kind
 	Field        *reflectedField
 	IsNil        bool
 	StopValidate bool
+
+	locale *locale
+	errors *Errors
+	source interface{}
 }
 
-func (this *ValidatorContext) SetValue(normalized *normalizedValue) {
+func (this *ValidatorContext) setValue(normalized *normalizedValue) {
 	this.Value = normalized.Value
 	this.OriginalKind = normalized.OriginalKind
 	this.IsNil = normalized.IsNil
 }
 
-func (this *ValidatorContext) SetSource(source interface{}) {
-	this.Source = source
+func (this *ValidatorContext) setSource(source interface{}) {
+	this.source = source
 }
 
-func (this *ValidatorContext) SetField(field *reflectedField) {
+func (this *ValidatorContext) setField(field *reflectedField) {
 	this.Field = field
 }
 
 func (this *ValidatorContext) GetLocalizedError(key string, args ...interface{}) error {
-	message, err := this.Locale.Get(key)
+	message, err := this.locale.Get(key)
 
 	if err != nil {
 		return err
@@ -64,8 +65,6 @@ func (this *ValidatorContext) GetLocalizedError(key string, args ...interface{})
 
 	return errors.New(message)
 }
-
-type ValidatorFilter func(context *ValidatorContext, options []string) error
 
 func emptyValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
@@ -410,7 +409,7 @@ func funcValidator(context *ValidatorContext, options []string) error {
 		return context.GetLocalizedError("arguments.singleRequired")
 	}
 
-	returnValues, err := callMethod(context.Source, funcName, context)
+	returnValues, err := callMethod(context.source, funcName, context)
 
 	if err != nil {
 		if err == InvalidMethodError {
