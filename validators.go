@@ -2,9 +2,11 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 	"unicode"
 )
@@ -25,6 +27,7 @@ IsRegexMatch
 IsUUID*/
 
 type ValidatorContext struct {
+	Locale       *locale
 	Errors       *Errors
 	Source       interface{}
 	Value        interface{}
@@ -48,11 +51,25 @@ func (this *ValidatorContext) SetField(field *reflectedField) {
 	this.Field = field
 }
 
+func (this *ValidatorContext) GetLocalizedError(key string, args ...interface{}) error {
+	message, err := this.Locale.Get(key)
+
+	if err != nil {
+		return err
+	}
+
+	if len(args) > 0 {
+		message = fmt.Sprintf(message, args...)
+	}
+
+	return errors.New(message)
+}
+
 type ValidatorFilter func(context *ValidatorContext, options []string) error
 
 func emptyValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
-		return errors.New("Validator 'empty' on field '{field}' does not support arguments.")
+		return context.GetLocalizedError("arguments.noneSupported")
 	}
 
 	if context.IsNil {
@@ -87,37 +104,41 @@ func emptyValidator(context *ValidatorContext, options []string) error {
 
 func notEmptyValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
-		return errors.New("Validator 'not_empty' on field '{field}' does not support arguments.")
+		return context.GetLocalizedError("arguments.noneSupported")
+	}
+
+	cannotBeEmptyError := func() error {
+		return context.GetLocalizedError("notEmpty.cannotBeEmpty")
 	}
 
 	if context.IsNil {
-		return errors.New("{field} cannot be empty.")
+		return cannotBeEmptyError()
 	}
 
 	switch typedValue := context.Value.(type) {
 	case string:
 		if len(typedValue) == 0 {
-			return errors.New("{field} cannot be empty.")
+			return cannotBeEmptyError()
 		}
 	case int64:
 		if typedValue == 0 {
-			return errors.New("{field} cannot be empty.")
+			return cannotBeEmptyError()
 		}
 	case float64:
 		if typedValue == 0 {
-			return errors.New("{field} cannot be empty.")
+			return cannotBeEmptyError()
 		}
 	}
 
 	switch context.OriginalKind {
 	case reflect.Array, reflect.Slice:
 		if reflect.ValueOf(context.Value).Len() == 0 {
-			return errors.New("{field} cannot be empty.")
+			return cannotBeEmptyError()
 		}
 		return nil
 	case reflect.Map:
 		if len(reflect.ValueOf(context.Value).MapKeys()) == 0 {
-			return errors.New("{field} cannot be empty.")
+			return cannotBeEmptyError()
 		}
 	}
 
@@ -126,29 +147,29 @@ func notEmptyValidator(context *ValidatorContext, options []string) error {
 
 func minValidator(context *ValidatorContext, options []string) error {
 	if len(options) != 1 {
-		return errors.New("Validator 'min' on field '{field}' requires a single argument.")
+		return context.GetLocalizedError("arguments.singleRequired")
 	}
 
 	minValue, err := strconv.Atoi(options[0])
 
 	if err != nil {
-		return errors.New("Unable to parse 'min' validator value on field '{field}'.")
+		return context.GetLocalizedError("arguments.invalid")
 	}
 
 	switch typedValue := context.Value.(type) {
 	case string:
 		if context.IsNil || len(typedValue) < minValue {
-			return errors.New("{field} cannot be shorter than " + strconv.Itoa(minValue) + " characters.")
+			return context.GetLocalizedError("min.cannotBeShorterThan", minValue)
 		}
 		return nil
 	case int64:
 		if context.IsNil || typedValue < int64(minValue) {
-			return errors.New("{field} cannot be less than " + strconv.Itoa(minValue) + ".")
+			return context.GetLocalizedError("min.cannotBeLessThan", minValue)
 		}
 		return nil
 	case float64:
 		if context.IsNil || typedValue < float64(minValue) {
-			return errors.New("{field} cannot be less than " + strconv.Itoa(minValue) + ".")
+			return context.GetLocalizedError("min.cannotBeLessThan", minValue)
 		}
 		return nil
 	}
@@ -156,12 +177,12 @@ func minValidator(context *ValidatorContext, options []string) error {
 	switch context.OriginalKind {
 	case reflect.Array, reflect.Slice:
 		if reflect.ValueOf(context.Value).Len() < minValue {
-			return errors.New("{field} cannot contain less than " + strconv.Itoa(minValue) + " items.")
+			return context.GetLocalizedError("min.cannotContainLessItemsThan", minValue)
 		}
 		return nil
 	case reflect.Map:
 		if len(reflect.ValueOf(context.Value).MapKeys()) < minValue {
-			return errors.New("{field} cannot contain less than " + strconv.Itoa(minValue) + " keys.")
+			return context.GetLocalizedError("min.cannotContainLessKeysThan", minValue)
 		}
 		return nil
 	}
@@ -171,29 +192,29 @@ func minValidator(context *ValidatorContext, options []string) error {
 
 func maxValidator(context *ValidatorContext, options []string) error {
 	if len(options) != 1 {
-		return errors.New("Validator 'max' on field '{field}' requires a single argument.")
+		return context.GetLocalizedError("arguments.singleRequired")
 	}
 
 	maxValue, err := strconv.Atoi(options[0])
 
 	if err != nil {
-		return errors.New("Unable to parse 'max' validator value on field '{field}'.")
+		return context.GetLocalizedError("arguments.invalid")
 	}
 
 	switch typedValue := context.Value.(type) {
 	case string:
 		if !context.IsNil && len(typedValue) > maxValue {
-			return errors.New("{field} is longer than " + strconv.Itoa(maxValue) + " characters.")
+			return context.GetLocalizedError("max.cannotBeLongerThan", maxValue)
 		}
 		return nil
 	case int64:
 		if !context.IsNil && typedValue > int64(maxValue) {
-			return errors.New("{field} cannot be greater than " + strconv.Itoa(maxValue) + ".")
+			return context.GetLocalizedError("max.cannotBeGreaterThan", maxValue)
 		}
 		return nil
 	case float64:
 		if !context.IsNil && typedValue > float64(maxValue) {
-			return errors.New("{field} cannot be greater than " + strconv.Itoa(maxValue) + ".")
+			return context.GetLocalizedError("max.cannotBeGreaterThan", maxValue)
 		}
 		return nil
 	}
@@ -201,12 +222,12 @@ func maxValidator(context *ValidatorContext, options []string) error {
 	switch context.OriginalKind {
 	case reflect.Array, reflect.Slice:
 		if reflect.ValueOf(context.Value).Len() > maxValue {
-			return errors.New("{field} cannot contain more than " + strconv.Itoa(maxValue) + " items.")
+			return context.GetLocalizedError("max.cannotContainMoreItemsThan", maxValue)
 		}
 		return nil
 	case reflect.Map:
 		if len(reflect.ValueOf(context.Value).MapKeys()) > maxValue {
-			return errors.New("{field} cannot contain more than " + strconv.Itoa(maxValue) + " keys.")
+			return context.GetLocalizedError("max.cannotContainMoreKeysThan", maxValue)
 		}
 		return nil
 	}
@@ -216,7 +237,7 @@ func maxValidator(context *ValidatorContext, options []string) error {
 
 func lowerCaseValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
-		return errors.New("Validator 'lowercase' on field '{field}' does not support any arguments.")
+		return context.GetLocalizedError("arguments.noneSupported")
 	}
 
 	switch typedValue := context.Value.(type) {
@@ -227,7 +248,7 @@ func lowerCaseValidator(context *ValidatorContext, options []string) error {
 
 		for _, char := range typedValue {
 			if unicode.IsLetter(char) && !unicode.IsLower(char) {
-				return errors.New("{field} must be in lower case.")
+				return context.GetLocalizedError("lowerCase.mustBeLowerCase")
 			}
 		}
 
@@ -239,7 +260,7 @@ func lowerCaseValidator(context *ValidatorContext, options []string) error {
 
 func upperCaseValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
-		return errors.New("Validator 'uppercase' on field '{field}' does not support any arguments.")
+		return context.GetLocalizedError("arguments.noneSupported")
 	}
 
 	switch typedValue := context.Value.(type) {
@@ -250,7 +271,7 @@ func upperCaseValidator(context *ValidatorContext, options []string) error {
 
 		for _, char := range typedValue {
 			if unicode.IsLetter(char) && !unicode.IsUpper(char) {
-				return errors.New("{field} must be in upper case.")
+				return context.GetLocalizedError("upperCase.mustBeUpperCase")
 			}
 		}
 
@@ -260,9 +281,45 @@ func upperCaseValidator(context *ValidatorContext, options []string) error {
 	return UnsupportedTypeError
 }
 
+func containValidator(context *ValidatorContext, options []string) error {
+	if len(options) == 0 {
+		return context.GetLocalizedError("arguments.oneOrMoreRequired")
+	}
+
+	switch typedValue := context.Value.(type) {
+	case string:
+		for _, testValue := range options {
+			if !strings.Contains(typedValue, testValue) {
+				return context.GetLocalizedError("contain.mustContainValues", strings.Join(options, "', '"))
+			}
+		}
+		return nil
+	}
+
+	return UnsupportedTypeError
+}
+
+func equalValidator(context *ValidatorContext, options []string) error {
+	if len(options) == 0 {
+		return context.GetLocalizedError("arguments.oneOrMoreRequired")
+	}
+
+	switch typedValue := context.Value.(type) {
+	case string:
+		for _, testValue := range options {
+			if typedValue == testValue {
+				return nil
+			}
+		}
+		return context.GetLocalizedError("equal.mustEqualValues", strings.Join(options, "', '"))
+	}
+
+	return UnsupportedTypeError
+}
+
 func regexpValidator(context *ValidatorContext, options []string) error {
 	if len(options) != 1 {
-		return errors.New("Validator 'regexp' on field '{field}' requires a single argument.")
+		return context.GetLocalizedError("arguments.singleRequired")
 	}
 
 	pattern := options[0]
@@ -275,7 +332,7 @@ func regexpValidator(context *ValidatorContext, options []string) error {
 		}
 
 		if !matched {
-			return errors.New("{field} must match pattern '" + pattern + "'.")
+			return context.GetLocalizedError("regexp.mustMatchPattern", pattern)
 		}
 
 		return nil
@@ -286,19 +343,19 @@ func regexpValidator(context *ValidatorContext, options []string) error {
 
 func numericValidator(context *ValidatorContext, options []string) error {
 	if len(options) > 0 {
-		return errors.New("Validator 'numeric' on field '{field}' does not support any arguments.")
+		return context.GetLocalizedError("arguments.noneSupported")
 	}
 
 	switch typedValue := context.Value.(type) {
 	case string:
 		if context.IsNil || len(typedValue) == 0 {
-			return errors.New("{field} must be numeric.")
+			return context.GetLocalizedError("numeric.mustBeNumeric")
 		}
 
 		value, err := strconv.ParseInt(typedValue, 10, 32)
 
 		if err != nil {
-			return errors.New("{field} must contain numbers only.")
+			return context.GetLocalizedError("numeric.mustBeNumeric")
 		}
 
 		context.Value = value
@@ -317,7 +374,7 @@ func timeValidator(context *ValidatorContext, options []string) error {
 	switch typedValue := context.Value.(type) {
 	case string:
 		if len(options) != 1 {
-			return errors.New("Validator 'time' on field '{field}' requires a single argument.")
+			return context.GetLocalizedError("arguments.singleRequired")
 		}
 
 		layout := options[0]
@@ -325,7 +382,7 @@ func timeValidator(context *ValidatorContext, options []string) error {
 		value, err := time.Parse(layout, typedValue)
 
 		if err != nil {
-			return errors.New("{field} must be a valid time.")
+			return context.GetLocalizedError("time.mustBeValid")
 		}
 
 		context.Value = value
@@ -333,7 +390,7 @@ func timeValidator(context *ValidatorContext, options []string) error {
 		return nil
 	case time.Time:
 		if len(options) != 0 {
-			return errors.New("Validator 'time' on field '{field}' does not support any arguments.")
+			return context.GetLocalizedError("arguments.noneSupported")
 		}
 		return nil
 	}
@@ -350,7 +407,7 @@ func funcValidator(context *ValidatorContext, options []string) error {
 	case 1:
 		funcName = options[0]
 	default:
-		return errors.New("Validator 'func' on field '{field}' does not support more than 1 argument.")
+		return context.GetLocalizedError("arguments.singleRequired")
 	}
 
 	returnValues, err := callMethod(context.Source, funcName, context)
@@ -382,6 +439,8 @@ func registerDefaultValidators() {
 	registerValidator("max", maxValidator)
 	registerValidator("lowercase", lowerCaseValidator)
 	registerValidator("uppercase", upperCaseValidator)
+	registerValidator("contain", containValidator)
+	registerValidator("equal", equalValidator)
 	registerValidator("regexp", regexpValidator)
 	registerValidator("numeric", numericValidator)
 	registerValidator("time", timeValidator)
