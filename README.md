@@ -67,7 +67,18 @@ The highest boundary of a type. I.e. the highest a number or the length of a str
 #### Examples
 
     Value int               `validate:"max(5)"` // Value cannot be greater than 5.
-    Value string            `validate:"max(5)"` // Value cannot contain more than 5 characters.
+    Value string            `validate:"max(5)"` // Value cannot be longer than 5 characters.
+    Value []string          `validate:"max(5)"` // Value cannot contain more than 5 items.
+    Value map[string]string `validate:"max(5)"` // Value cannot contain more than 5 keys.
+
+### Not empty (`not_empty`)
+
+Assert that a type is not empty. I.e. that a number or the length of a string is not 0, or that the value of a pointer is not `nil`.
+
+#### Examples
+
+    Value int               `validate:"max(5)"` // Value cannot be greater than 5.
+    Value string            `validate:"max(5)"` // Value cannot be longer than 5 characters.
     Value []string          `validate:"max(5)"` // Value cannot contain more than 5 items.
     Value map[string]string `validate:"max(5)"` // Value cannot contain more than 5 keys.
     
