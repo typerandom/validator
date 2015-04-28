@@ -55,7 +55,7 @@ In order to specify how fields should be validated, fields must be tagged with t
 
     Value int     `validate:"not_empty,max(10)"`
     Value string  `validate:"empty,regex(^[a-z_]*$),max(64)"`
-    Value *string `validate:"not_empty,func`
+    Value *string `validate:"not_empty,func"`
 
 ## Validators
 
