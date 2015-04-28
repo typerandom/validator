@@ -1,8 +1,6 @@
 # Validator [![GoDoc](https://godoc.org/github.com/typerandom/validate?status.png)](http://godoc.org/github.com/typerandom/validate)
 
-A validation library for Go.
-
-------------------
+A simple, expressive and powerful validation library for Go.
 
 ## Getting Started
 
