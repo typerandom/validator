@@ -11,6 +11,11 @@ A simple, expressive and powerful validation library for Go.
 
 ## Getting Started
 
+1. Import `github.com/typerandom/validator` into to your Go project.
+2. Add validation tags to the structure that you want to validate. See section `Tagging` below.
+3. Call `errors := validator.Validate(onYourObjectThatYouHaveGivenValidatorTags)`.
+4. Check if the return value (errors) are empty (`errors.Any()`). If they are, then validation passed, if not, then show the errors to the user.
+
 ## Example
 
 	package main
@@ -42,6 +47,15 @@ A simple, expressive and powerful validation library for Go.
 		print("Hey " + person.FirstName + "!")
 	}
 
+## Tagging
+
+In order to specify how fields should be validated, fields must be tagged with the `validate` tag. The `validate` tag should contain validation rules in the format of `validator_name(params)` and should be separated by `,` for chaining of multiple rules. I.e. `some_validator,other_validator(abc)`.
+
+### Examples
+
+    Value int     `validate:"not_empty,max(10)"`
+    Value string  `validate:"empty,regex(^[a-z_]*$),max(64)"`
+    Value *string `validate:"not_empty,func`
 
 ## Validators
 
