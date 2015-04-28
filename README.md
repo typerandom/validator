@@ -2,6 +2,13 @@
 
 A simple, expressive and powerful validation library for Go.
 
+## Features
+
+* Tag structure fields with parameterizable validation rules.
+* Validate deeply nested structures.
+* Add custom validators.
+* Load locale from JSON file.
+
 ## Getting Started
 
 ## Example
