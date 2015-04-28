@@ -14,7 +14,7 @@ A simple, expressive and powerful validation library for Go.
 1. Import `github.com/typerandom/validator` into to your Go project.
 2. Add validation tags to the structure that you want to validate. See section `Tagging` below.
 3. Call `errors := validator.Validate(onYourObjectThatYouHaveGivenValidatorTags)`.
-4. Check if the return value (errors) are empty (`errors.Any()`). If they are, then validation passed, if not, then show the errors to the user.
+4. Check if the return value (errors) are empty (using `errors.Any()`). If they are, then validation passed, if not, then show the errors to the user.
 
 ## Example
 
