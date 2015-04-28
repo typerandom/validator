@@ -1,8 +1,8 @@
-package cocoon
+package validator
 
 import (
 	"errors"
-	"github.com/typerandom/cocoon/core"
+	"github.com/typerandom/validator/core"
 	"reflect"
 	"regexp"
 	"strconv"

@@ -1,7 +1,7 @@
-package cocoon
+package validator
 
 import (
-	"github.com/typerandom/cocoon/core"
+	"github.com/typerandom/validator/core"
 )
 
 var globalInitialized bool

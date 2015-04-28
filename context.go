@@ -1,9 +1,9 @@
-package cocoon
+package validator
 
 import (
 	"errors"
 	"fmt"
-	"github.com/typerandom/cocoon/core"
+	"github.com/typerandom/validator/core"
 	"reflect"
 )
 
