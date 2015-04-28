@@ -51,10 +51,10 @@ The lowest boundary of a type. I.e. the lowest a number or the length of a strin
 
 #### Examples
 
-    Age int       `validate:"min(3)"`  // Age cannot be less than 3.
-    Name string   `validate:"min(3)"`  // Name cannot contain less than 3 characters.
-    Name []string `validate:"min(3)"`  // Name cannot contain less than 3 items.
-    Name ]string  `validate:"min(3)"`  // Name cannot contain less than 3 keys.
+    Age int                 `validate:"min(3)"` // Age cannot be less than 3.
+    Name string             `validate:"min(3)"` // Name cannot contain less than 3 characters.
+    Name []string           `validate:"min(3)"` // Name cannot contain less than 3 items.
+    Name map[string]string  `validate:"min(3)"` // Name cannot contain less than 3 keys.
     
 #### Supports
 
