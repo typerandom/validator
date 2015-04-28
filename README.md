@@ -1,4 +1,4 @@
-# Validator [![GoDoc](https://godoc.org/github.com/typerandom/validate?status.png)](http://godoc.org/github.com/typerandom/validate)
+# Validator [![GoDoc](https://godoc.org/github.com/typerandom/validator?status.png)](http://godoc.org/github.com/typerandom/validator)
 
 A simple, expressive and powerful validation library for Go.
 
