@@ -112,6 +112,20 @@ Pointers, strings, integers, floats, maps, arrays and slices.
 * regexp
 * func
 
+## Custom Validators
+
+### Global
+
+Register a global validator by calling `validator.Register(name string, validator ValidatorFn)`.
+
+    validator.Register("validator_name", func (context *validator.Context, options []string) error {
+        // ...
+    })
+    
+### Local to struct
+
+Use the `func` validator tag to assign a custom validator method on your structure. See `func` under the `Validators` section above for more information.
+
 # License
 
 MIT
