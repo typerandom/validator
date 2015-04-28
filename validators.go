@@ -56,7 +56,7 @@ func getValidator(name string) (validatorFilter, error) {
 	return validator, nil
 }
 
-var UnsupportedTypeError = errors.New("Validator not supported.")
+var UnsupportedTypeError = errors.New("Validator '{validator}' does not support the type of field '{field}'.")
 
 func emptyValidator(context *Context, options []string) error {
 	if len(options) > 0 {
