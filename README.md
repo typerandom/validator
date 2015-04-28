@@ -47,7 +47,7 @@ A simple, expressive and powerful validation library for Go.
 
 ### Minimum (`min`)
 
-The lowest that a number or the length of a string can be.
+The lowest boundary of a type. I.e. the lowest a number or the length of a string can be.
 
 #### Examples
 
