@@ -100,6 +100,18 @@ Assert that a type is not empty. I.e. that a number or the length of a string is
 
 Pointers, strings, integers, floats, maps, arrays and slices.
 
+### Not documented yet...
+
+* empty
+* equal
+* contain
+* lowerCase
+* upperCase
+* numeric
+* time
+* regexp
+* func
+
 # License
 
 MIT
