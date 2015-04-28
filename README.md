@@ -76,6 +76,24 @@ Outputs all of the errors to the console.
 
 Get the first error in the list.
 
+# TODO
+
+List of validatiors that would be nice to have.
+
+* IsHex
+* IsType
+* IsISO8601
+* IsUnixTime
+* IsEmail
+* IsUrl
+* IsFilePath
+* IsType              type(string)
+* IsInteger
+* IsDecimal
+* IsIP
+* IsRegexMatch
+* IsUUID
+
 # License
 
 MIT

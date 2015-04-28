@@ -1,11 +1,11 @@
-package main
+package core
 
 import (
 	"errors"
 	"reflect"
 )
 
-type normalizedValue struct {
+type NormalizedValue struct {
 	Value        interface{}
 	OriginalKind reflect.Kind
 	IsNil        bool
@@ -49,7 +49,9 @@ func normalizeNumeric(value interface{}) (result interface{}, kind reflect.Kind,
 	return
 }
 
-func normalizeValue(value interface{}, isNil bool) (*normalizedValue, error) {
+// TODO: Normalize slices to arrays?
+
+func NormalizeValue(value interface{}, isNil bool) (*NormalizedValue, error) {
 	valueType := reflect.ValueOf(value)
 	kind := valueType.Kind()
 
@@ -68,7 +70,7 @@ func normalizeValue(value interface{}, isNil bool) (*normalizedValue, error) {
 			value = valueType.Elem().Interface()
 		}
 
-		return normalizeValue(value, isNil)
+		return NormalizeValue(value, isNil)
 
 	// Normalize all numeric types to their 64-bit counterparts (i.e. int8 -> int64, float32 -> float64)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32:
@@ -84,9 +86,11 @@ func normalizeValue(value interface{}, isNil bool) (*normalizedValue, error) {
 		kind = valueKind
 	}
 
-	return &normalizedValue{
+	normalized := &NormalizedValue{
 		Value:        value,
 		OriginalKind: kind,
 		IsNil:        isNil,
-	}, nil
+	}
+
+	return normalized, nil
 }

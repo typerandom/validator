@@ -1,9 +1,73 @@
-package main
+package core
 
 import (
 	"errors"
 	"reflect"
+	"strings"
+	"unicode"
 )
+
+type ReflectedField struct {
+	Parent *ReflectedField
+	Name   string
+	Value  interface{}
+	Tags   []*Tag
+}
+
+func (this *ReflectedField) FullName(postfix ...string) string {
+	fullName := this.Name
+	parent := this.Parent
+
+	for parent != nil {
+		if len(parent.Name) > 0 {
+			fullName = parent.Name + "." + fullName
+		}
+		parent = parent.Parent
+	}
+
+	if len(postfix) > 0 {
+		if len(fullName) > 0 {
+			fullName += "."
+		}
+		fullName += strings.Join(postfix, ".")
+	}
+
+	return fullName
+}
+
+func reflectValue(value interface{}) (reflect.Type, reflect.Value) {
+	reflectValue := reflect.ValueOf(value)
+	valueType := reflectValue.Type()
+
+	if valueType.Kind() == reflect.Ptr {
+		valueType = valueType.Elem()
+	}
+
+	return valueType, reflect.Indirect(reflectValue)
+}
+
+func GetStructFields(value interface{}, tagName string) []*ReflectedField {
+	var fields []*ReflectedField
+
+	valueType, reflectedValue := reflectValue(value)
+
+	for i := 0; i < valueType.NumField(); i++ {
+		field := valueType.Field(i)
+		if unicode.IsUpper(rune(field.Name[0])) { // only grab exported fields
+			tagValue := field.Tag.Get(tagName)
+
+			reflectedField := &ReflectedField{
+				Name:  field.Name,
+				Value: reflectedValue.Field(i).Interface(),
+				Tags:  parseTag(tagValue),
+			}
+
+			fields = append(fields, reflectedField)
+		}
+	}
+
+	return fields
+}
 
 var (
 	InvalidMethodError          = errors.New("Method does not exist.")
@@ -11,7 +75,7 @@ var (
 	UnhandledCallError          = errors.New("Unhandled function call error.")
 )
 
-func callMethod(i interface{}, methodName string, args ...interface{}) ([]interface{}, error) {
+func CallDynamicMethod(i interface{}, methodName string, args ...interface{}) ([]interface{}, error) {
 	var ptr reflect.Value
 	var value reflect.Value
 	var finalMethod reflect.Value

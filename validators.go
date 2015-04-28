@@ -1,8 +1,8 @@
-package main
+package cocoon
 
 import (
 	"errors"
-	"fmt"
+	"github.com/typerandom/cocoon/core"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -11,62 +11,54 @@ import (
 	"unicode"
 )
 
-/*
-IsHex
-IsType
-IsISO8601
-IsUnixTime
-IsEmail
-IsUrl
-IsFilePath
-IsType				type(string)
-IsInteger
-IsDecimal
-IsIP
-IsRegexMatch
-IsUUID*/
-
-type ValidatorContext struct {
-	Value        interface{}
-	OriginalKind reflect.Kind
-	Field        *reflectedField
-	IsNil        bool
-	StopValidate bool
-
-	locale *locale
-	errors *Errors
-	source interface{}
+func newValidatorError(field *core.ReflectedField, tag *core.Tag, err error) *ValidatorError {
+	return &ValidatorError{
+		Field:  field,
+		Tag:    tag,
+		Source: err,
+	}
 }
 
-func (this *ValidatorContext) setValue(normalized *normalizedValue) {
-	this.Value = normalized.Value
-	this.OriginalKind = normalized.OriginalKind
-	this.IsNil = normalized.IsNil
+type ValidatorError struct {
+	Field  *core.ReflectedField
+	Tag    *core.Tag
+	Source error
 }
 
-func (this *ValidatorContext) setSource(source interface{}) {
-	this.source = source
+func (this *ValidatorError) String() string {
+	return "{ error: " + this.Error() + "}"
 }
 
-func (this *ValidatorContext) setField(field *reflectedField) {
-	this.Field = field
+func (this *ValidatorError) Error() string {
+	message := strings.Replace(this.Source.Error(), "{field}", this.Field.FullName(), 1)
+	message = strings.Replace(message, "{validator}", this.Tag.Name, 1)
+	return message
 }
 
-func (this *ValidatorContext) GetLocalizedError(key string, args ...interface{}) error {
-	message, err := this.locale.Get(key)
+type validatorFilter func(context *Context, options []string) error
 
-	if err != nil {
-		return err
+var validators map[string]validatorFilter
+
+func registerValidator(name string, validator validatorFilter) {
+	if validators == nil {
+		validators = make(map[string]validatorFilter)
+	}
+	validators[name] = validator
+}
+
+func getValidator(name string) (validatorFilter, error) {
+	validator, ok := validators[name]
+
+	if !ok {
+		return nil, errors.New("Validator '" + name + "' is not registered.")
 	}
 
-	if len(args) > 0 {
-		message = fmt.Sprintf(message, args...)
-	}
-
-	return errors.New(message)
+	return validator, nil
 }
 
-func emptyValidator(context *ValidatorContext, options []string) error {
+var UnsupportedTypeError = errors.New("Validator not supported.")
+
+func emptyValidator(context *Context, options []string) error {
 	if len(options) > 0 {
 		return context.GetLocalizedError("arguments.noneSupported")
 	}
@@ -101,7 +93,7 @@ func emptyValidator(context *ValidatorContext, options []string) error {
 	return nil
 }
 
-func notEmptyValidator(context *ValidatorContext, options []string) error {
+func notEmptyValidator(context *Context, options []string) error {
 	if len(options) > 0 {
 		return context.GetLocalizedError("arguments.noneSupported")
 	}
@@ -144,7 +136,7 @@ func notEmptyValidator(context *ValidatorContext, options []string) error {
 	return nil
 }
 
-func minValidator(context *ValidatorContext, options []string) error {
+func minValidator(context *Context, options []string) error {
 	if len(options) != 1 {
 		return context.GetLocalizedError("arguments.singleRequired")
 	}
@@ -189,7 +181,7 @@ func minValidator(context *ValidatorContext, options []string) error {
 	return UnsupportedTypeError
 }
 
-func maxValidator(context *ValidatorContext, options []string) error {
+func maxValidator(context *Context, options []string) error {
 	if len(options) != 1 {
 		return context.GetLocalizedError("arguments.singleRequired")
 	}
@@ -234,7 +226,43 @@ func maxValidator(context *ValidatorContext, options []string) error {
 	return UnsupportedTypeError
 }
 
-func lowerCaseValidator(context *ValidatorContext, options []string) error {
+func equalValidator(context *Context, options []string) error {
+	if len(options) == 0 {
+		return context.GetLocalizedError("arguments.oneOrMoreRequired")
+	}
+
+	switch typedValue := context.Value.(type) {
+	case string:
+		for _, testValue := range options {
+			if typedValue == testValue {
+				return nil
+			}
+		}
+		return context.GetLocalizedError("equal.mustEqualValues", strings.Join(options, "', '"))
+	}
+
+	return UnsupportedTypeError
+}
+
+func containValidator(context *Context, options []string) error {
+	if len(options) == 0 {
+		return context.GetLocalizedError("arguments.oneOrMoreRequired")
+	}
+
+	switch typedValue := context.Value.(type) {
+	case string:
+		for _, testValue := range options {
+			if !strings.Contains(typedValue, testValue) {
+				return context.GetLocalizedError("contain.mustContainValues", strings.Join(options, "', '"))
+			}
+		}
+		return nil
+	}
+
+	return UnsupportedTypeError
+}
+
+func lowerCaseValidator(context *Context, options []string) error {
 	if len(options) > 0 {
 		return context.GetLocalizedError("arguments.noneSupported")
 	}
@@ -257,7 +285,7 @@ func lowerCaseValidator(context *ValidatorContext, options []string) error {
 	return UnsupportedTypeError
 }
 
-func upperCaseValidator(context *ValidatorContext, options []string) error {
+func upperCaseValidator(context *Context, options []string) error {
 	if len(options) > 0 {
 		return context.GetLocalizedError("arguments.noneSupported")
 	}
@@ -280,67 +308,7 @@ func upperCaseValidator(context *ValidatorContext, options []string) error {
 	return UnsupportedTypeError
 }
 
-func containValidator(context *ValidatorContext, options []string) error {
-	if len(options) == 0 {
-		return context.GetLocalizedError("arguments.oneOrMoreRequired")
-	}
-
-	switch typedValue := context.Value.(type) {
-	case string:
-		for _, testValue := range options {
-			if !strings.Contains(typedValue, testValue) {
-				return context.GetLocalizedError("contain.mustContainValues", strings.Join(options, "', '"))
-			}
-		}
-		return nil
-	}
-
-	return UnsupportedTypeError
-}
-
-func equalValidator(context *ValidatorContext, options []string) error {
-	if len(options) == 0 {
-		return context.GetLocalizedError("arguments.oneOrMoreRequired")
-	}
-
-	switch typedValue := context.Value.(type) {
-	case string:
-		for _, testValue := range options {
-			if typedValue == testValue {
-				return nil
-			}
-		}
-		return context.GetLocalizedError("equal.mustEqualValues", strings.Join(options, "', '"))
-	}
-
-	return UnsupportedTypeError
-}
-
-func regexpValidator(context *ValidatorContext, options []string) error {
-	if len(options) != 1 {
-		return context.GetLocalizedError("arguments.singleRequired")
-	}
-
-	pattern := options[0]
-
-	if testValue, ok := context.Value.(string); ok {
-		matched, err := regexp.MatchString(pattern, testValue)
-
-		if err != nil {
-			return errors.New("Unexpected regexp error for validator field '{field}': " + err.Error())
-		}
-
-		if !matched {
-			return context.GetLocalizedError("regexp.mustMatchPattern", pattern)
-		}
-
-		return nil
-	}
-
-	return UnsupportedTypeError
-}
-
-func numericValidator(context *ValidatorContext, options []string) error {
+func numericValidator(context *Context, options []string) error {
 	if len(options) > 0 {
 		return context.GetLocalizedError("arguments.noneSupported")
 	}
@@ -369,7 +337,7 @@ func numericValidator(context *ValidatorContext, options []string) error {
 	return UnsupportedTypeError
 }
 
-func timeValidator(context *ValidatorContext, options []string) error {
+func timeValidator(context *Context, options []string) error {
 	switch typedValue := context.Value.(type) {
 	case string:
 		if len(options) != 1 {
@@ -397,7 +365,31 @@ func timeValidator(context *ValidatorContext, options []string) error {
 	return UnsupportedTypeError
 }
 
-func funcValidator(context *ValidatorContext, options []string) error {
+func regexpValidator(context *Context, options []string) error {
+	if len(options) != 1 {
+		return context.GetLocalizedError("arguments.singleRequired")
+	}
+
+	pattern := options[0]
+
+	if testValue, ok := context.Value.(string); ok {
+		matched, err := regexp.MatchString(pattern, testValue)
+
+		if err != nil {
+			return errors.New("Unexpected regexp error for validator field '{field}': " + err.Error())
+		}
+
+		if !matched {
+			return context.GetLocalizedError("regexp.mustMatchPattern", pattern)
+		}
+
+		return nil
+	}
+
+	return UnsupportedTypeError
+}
+
+func funcValidator(context *Context, options []string) error {
 	var funcName string
 
 	switch len(options) {
@@ -409,10 +401,10 @@ func funcValidator(context *ValidatorContext, options []string) error {
 		return context.GetLocalizedError("arguments.singleRequired")
 	}
 
-	returnValues, err := callMethod(context.source, funcName, context)
+	returnValues, err := core.CallDynamicMethod(context.source, funcName, context)
 
 	if err != nil {
-		if err == InvalidMethodError {
+		if err == core.InvalidMethodError {
 			return errors.New("Validation method '" + context.Field.Parent.FullName(funcName) + "' on field '{field}' does not exist.")
 		}
 		return err
@@ -428,20 +420,5 @@ func funcValidator(context *ValidatorContext, options []string) error {
 		}
 	}
 
-	return UnsupportedTypeError
-}
-
-func registerDefaultValidators() {
-	registerValidator("empty", emptyValidator)
-	registerValidator("not_empty", notEmptyValidator)
-	registerValidator("min", minValidator)
-	registerValidator("max", maxValidator)
-	registerValidator("lowercase", lowerCaseValidator)
-	registerValidator("uppercase", upperCaseValidator)
-	registerValidator("contain", containValidator)
-	registerValidator("equal", equalValidator)
-	registerValidator("regexp", regexpValidator)
-	registerValidator("numeric", numericValidator)
-	registerValidator("time", timeValidator)
-	registerValidator("func", funcValidator)
+	return errors.New("Validator not supported.")
 }

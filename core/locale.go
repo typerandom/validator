@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"encoding/json"
@@ -6,28 +6,28 @@ import (
 	"io/ioutil"
 )
 
-type locale struct {
+type Locale struct {
 	Messages map[string]string
 }
 
-func newLocale() *locale {
-	return &locale{
+func NewLocale() *Locale {
+	return &Locale{
 		Messages: make(map[string]string),
 	}
 }
 
-func (this *locale) Set(key string, value string) {
+func (this *Locale) Set(key string, value string) {
 	this.Messages[key] = value
 }
 
-func (this *locale) Get(key string) (string, error) {
+func (this *Locale) Get(key string) (string, error) {
 	if val, ok := this.Messages[key]; ok {
 		return val, nil
 	}
 	return "", errors.New("Locale " + key + " does not exist.")
 }
 
-func (this *locale) LoadJson(filePath string) error {
+func (this *Locale) LoadJson(filePath string) error {
 	rawJson, err := ioutil.ReadFile(filePath)
 
 	if err != nil {
