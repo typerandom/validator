@@ -18,6 +18,8 @@ A simple, expressive and powerful validation library for Go.
 
 ## Example
 
+### example.go
+
 	package main
 
 	import (
@@ -25,18 +27,18 @@ A simple, expressive and powerful validation library for Go.
 	)
 
 	type Person struct {
-		FirstName string `validate:"min(2),max(16)"`
-		LastName  string `validate:"min(2),max(20)"`
+		FirstName string `validate:"min(5),max(16)"`
+		LastName  string `validate:"min(5),max(20)"`
 		Email     string `validate:"regexp(^[a-z0-9-]*@[a-z0-9.]*\\\\.com$)"`
 		Age       int    `validate:"min(18),max(65)"`
 	}
 
 	func main() {
 		person := &Person{
-			FirstName: "Bobby",
-			LastName:  "Tables",
-			Email:     "bob@tables.com",
-			Age:       19,
+			FirstName: "Bob",
+			LastName:  "Tab",
+			Email:     "bobby@tables",
+			Age:       17,
 		}
 
 		if errors := validator.Validate(person); errors.Any() {
@@ -46,6 +48,13 @@ A simple, expressive and powerful validation library for Go.
 
 		print("Hey " + person.FirstName + "!")
 	}
+	
+Running the example above would output:
+
+    FirstName cannot be shorter than 5 characters.
+    LastName cannot be shorter than 5 characters.
+    Email must match pattern '^[a-z0-9-]*@[a-z0-9.]*\.com$'.
+    Age cannot be less than 18.
 
 ## Tagging
 
