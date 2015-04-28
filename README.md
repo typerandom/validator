@@ -105,8 +105,8 @@ Pointers, strings, integers, floats, maps, arrays and slices.
 * empty
 * equal
 * contain
-* lowerCase
-* upperCase
+* lower_case
+* upper_case
 * numeric
 * time
 * regexp
