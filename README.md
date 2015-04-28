@@ -51,10 +51,25 @@ The lowest boundary of a type. I.e. the lowest a number or the length of a strin
 
 #### Examples
 
-    Age int                 `validate:"min(3)"` // Age cannot be less than 3.
-    Name string             `validate:"min(3)"` // Name cannot contain less than 3 characters.
-    Name []string           `validate:"min(3)"` // Name cannot contain less than 3 items.
-    Name map[string]string  `validate:"min(3)"` // Name cannot contain less than 3 keys.
+    Value int               `validate:"min(5)"` // Value cannot be less than 5.
+    Value string            `validate:"min(5)"` // Value cannot contain less than 5 characters.
+    Value []string          `validate:"min(5)"` // Value cannot contain less than 5 items.
+    Value map[string]string `validate:"min(5)"` // Value cannot contain less than 5 keys.
+    
+#### Supports
+
+Strings, integers, floats, maps, arrays and slices.
+
+### Maximum (`max`)
+
+The highest boundary of a type. I.e. the highest a number or the length of a string can be.
+
+#### Examples
+
+    Value int               `validate:"max(5)"` // Value cannot be greater than 5.
+    Value string            `validate:"max(5)"` // Value cannot contain more than 5 characters.
+    Value []string          `validate:"max(5)"` // Value cannot contain more than 5 items.
+    Value map[string]string `validate:"max(5)"` // Value cannot contain more than 5 keys.
     
 #### Supports
 
