@@ -2,6 +2,8 @@
 
 A simple, expressive and powerful validation library for Go.
 
+**WARNING: This library is WIP and is at it's current state not suitable for production. If you use this library, you may be subject to breaking API changes.**
+
 ## Features
 
 * Tag structure fields with parameterizable validation rules.
