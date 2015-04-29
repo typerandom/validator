@@ -58,39 +58,50 @@ func getValidator(name string) (validatorFilter, error) {
 
 var UnsupportedTypeError = errors.New("Validator '{validator}' does not support the type of field '{field}'.")
 
+func nilValidator(context *Context, options []string) error {
+	if len(options) > 0 {
+		return context.GetLocalizedError("arguments.noneSupported")
+	}
+
+	if context.IsNil {
+		return nil
+	}
+
+	return context.GetLocalizedError("nil.isNotNil")
+}
+
 func emptyValidator(context *Context, options []string) error {
 	if len(options) > 0 {
 		return context.GetLocalizedError("arguments.noneSupported")
 	}
 
 	if context.IsNil {
-		context.StopValidate = true
 		return nil
 	}
 
 	switch typedValue := context.Value.(type) {
 	case string:
 		if len(typedValue) == 0 {
-			context.StopValidate = true
+			return nil
 		}
 	case int64:
 		if typedValue == 0 {
-			context.StopValidate = true
+			return nil
 		}
 	}
 
 	switch context.OriginalKind {
 	case reflect.Array, reflect.Slice:
 		if reflect.ValueOf(context.Value).Len() == 0 {
-			context.StopValidate = true
+			return nil
 		}
 	case reflect.Map:
 		if len(reflect.ValueOf(context.Value).MapKeys()) == 0 {
-			context.StopValidate = true
+			return nil
 		}
 	}
 
-	return nil
+	return context.GetLocalizedError("empty.isNotEmpty")
 }
 
 func notEmptyValidator(context *Context, options []string) error {

@@ -8,10 +8,10 @@ import (
 )
 
 type ReflectedField struct {
-	Parent *ReflectedField
-	Name   string
-	Value  interface{}
-	Tags   []*Tag
+	Parent    *ReflectedField
+	Name      string
+	Value     interface{}
+	TagGroups []TagGroup
 }
 
 func (this *ReflectedField) FullName(postfix ...string) string {
@@ -46,7 +46,7 @@ func reflectValue(value interface{}) (reflect.Type, reflect.Value) {
 	return valueType, reflect.Indirect(reflectValue)
 }
 
-func GetStructFields(value interface{}, tagName string) []*ReflectedField {
+func GetStructFields(value interface{}, tagName string) ([]*ReflectedField, error) {
 	var fields []*ReflectedField
 
 	valueType, reflectedValue := reflectValue(value)
@@ -56,17 +56,23 @@ func GetStructFields(value interface{}, tagName string) []*ReflectedField {
 		if unicode.IsUpper(rune(field.Name[0])) { // only grab exported fields
 			tagValue := field.Tag.Get(tagName)
 
+			tagGroups, err := parseTag(tagValue)
+
+			if err != nil {
+				return nil, err
+			}
+
 			reflectedField := &ReflectedField{
-				Name:  field.Name,
-				Value: reflectedValue.Field(i).Interface(),
-				Tags:  parseTag(tagValue),
+				Name:      field.Name,
+				Value:     reflectedValue.Field(i).Interface(),
+				TagGroups: tagGroups,
 			}
 
 			fields = append(fields, reflectedField)
 		}
 	}
 
-	return fields
+	return fields, nil
 }
 
 var (
@@ -75,6 +81,8 @@ var (
 	UnhandledCallError          = errors.New("Unhandled function call error.")
 )
 
+// Source: http://stackoverflow.com/questions/27673747/reflection-error-on-golang-too-few-arguments
+// Note, this is really ugly/messy and should definitely be cleaned up.
 func CallDynamicMethod(i interface{}, methodName string, args ...interface{}) ([]interface{}, error) {
 	var ptr reflect.Value
 	var value reflect.Value
@@ -82,8 +90,6 @@ func CallDynamicMethod(i interface{}, methodName string, args ...interface{}) ([
 
 	value = reflect.ValueOf(i)
 
-	// if we start with a pointer, we need to get value pointed to
-	// if we start with a value, we need to get a pointer to that value
 	if value.Type().Kind() == reflect.Ptr {
 		ptr = value
 		value = ptr.Elem()
@@ -93,14 +99,12 @@ func CallDynamicMethod(i interface{}, methodName string, args ...interface{}) ([
 		temp.Set(value)
 	}
 
-	// check for method on value
 	method := value.MethodByName(methodName)
 
 	if method.IsValid() {
 		finalMethod = method
 	}
 
-	// check for method on pointer
 	method = ptr.MethodByName(methodName)
 
 	if method.IsValid() {
@@ -142,6 +146,5 @@ func CallDynamicMethod(i interface{}, methodName string, args ...interface{}) ([
 		return returnValues, nil
 	}
 
-	// return or panic, method not found of either type
 	return nil, UnhandledCallError
 }

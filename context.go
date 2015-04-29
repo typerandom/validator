@@ -12,7 +12,6 @@ type Context struct {
 	OriginalKind reflect.Kind
 	Field        *core.ReflectedField
 	IsNil        bool
-	StopValidate bool
 
 	locale *core.Locale
 	errors *core.Errors

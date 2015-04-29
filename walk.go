@@ -20,12 +20,19 @@ func walkValidateMap(context *Context, normalized *core.NormalizedValue, parentF
 }
 
 func walkValidateStruct(context *Context, normalized *core.NormalizedValue, parentField *core.ReflectedField) {
-	for _, field := range core.GetStructFields(normalized.Value, "validate") {
+	fields, err := core.GetStructFields(normalized.Value, "validate")
+
+	if err != nil {
+		context.errors.Add(err)
+		return
+	}
+
+	for _, field := range fields {
 		normalizedFieldValue, err := core.NormalizeValue(field.Value, false)
 
 		if err != nil {
 			context.errors.Add(newValidatorError(field, nil, err))
-			break
+			continue
 		}
 
 		field.Parent = parentField
@@ -34,21 +41,36 @@ func walkValidateStruct(context *Context, normalized *core.NormalizedValue, pare
 		context.setSource(normalized.Value)
 		context.setValue(normalizedFieldValue)
 
-		for _, tag := range field.Tags {
-			validate, err := getValidator(tag.Name)
+		var mostRecentErrorGroup *core.Errors
 
-			if err != nil {
-				context.errors.Add(err)
+		for _, tags := range field.TagGroups {
+			var errors *core.Errors
+
+			for _, tag := range tags {
+				validate, err := getValidator(tag.Name)
+
+				if err != nil {
+					context.errors.Add(err)
+					return
+				}
+
+				if err = validate(context, tag.Options); err != nil {
+					if errors == nil {
+						errors = core.NewErrors()
+					}
+					errors.Add(newValidatorError(field, tag, err))
+				}
+			}
+
+			mostRecentErrorGroup = errors
+
+			if errors == nil {
 				break
 			}
+		}
 
-			if err = validate(context, tag.Options); err != nil {
-				context.errors.Add(newValidatorError(field, tag, err))
-			}
-
-			if context.StopValidate {
-				break
-			}
+		if mostRecentErrorGroup != nil {
+			context.errors.AddMany(mostRecentErrorGroup)
 		}
 
 		walkValidate(context, context.Value, field)

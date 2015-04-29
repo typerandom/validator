@@ -16,6 +16,12 @@ func (this *Errors) Add(err error) {
 	this.Items = append(this.Items, err)
 }
 
+func (this *Errors) AddMany(errs *Errors) {
+	for _, err := range errs.Items {
+		this.Items = append(this.Items, err)
+	}
+}
+
 func (this *Errors) First() error {
 	return this.Items[0]
 }

@@ -2,14 +2,16 @@ package core
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"strings"
 )
 
 const (
-	StateName             = 0
-	StateOption           = 1
-	StateOptionEscape     = 2
-	StateOptionWhitespace = 3
+	STATE_NAME              = 0
+	STATE_OPTION            = 1
+	STATE_OPTION_ESCAPE     = 2
+	STATE_OPTION_WHITESPACE = 3
 )
 
 type Tag struct {
@@ -18,7 +20,7 @@ type Tag struct {
 }
 
 func (this *Tag) String() string {
-	serializedOptions := strings.Join(this.Options, ", ")
+	serializedOptions := strings.Join(this.Options, "', '")
 
 	if len(serializedOptions) == 0 {
 		serializedOptions = "(none)"
@@ -29,67 +31,131 @@ func (this *Tag) String() string {
 	return "{ name: '" + this.Name + "', options: " + serializedOptions + " }"
 }
 
-func parseTag(rawTag string) []*Tag {
-	var tags []*Tag
+type TagGroup []*Tag
 
-	var buffer bytes.Buffer
-	var currentTag *Tag
-	var currentState int
+func (this TagGroup) String() string {
+	result := ""
 
-	for _, char := range rawTag {
-		switch {
-		case currentState == StateOptionEscape:
-			buffer.WriteRune(char)
-			currentState = StateOption
-		case currentState == StateOption && char == '\\':
-			currentState = StateOptionEscape
-		case char == '(':
-			currentState = StateOption
-			currentTag.Name = buffer.String()
-			buffer.Reset()
-		case currentState == StateOption && char == ')':
-			currentState = StateName
-			if buffer.Len() > 0 {
-				currentTag.Options = append(currentTag.Options, buffer.String())
-				buffer.Reset()
-			}
-		case currentState == StateOptionWhitespace:
-			if char != ' ' && char != '	' {
-				currentState = StateOption
-				buffer.WriteRune(char)
-			}
-		case currentState == StateOption && char == ',':
-			if buffer.Len() > 0 {
-				currentState = StateOptionWhitespace
-				currentTag.Options = append(currentTag.Options, buffer.String())
-				buffer.Reset()
-			}
-		case currentState == StateName && char == ',':
-			if buffer.Len() > 0 {
-				currentTag.Name = buffer.String()
-				buffer.Reset()
-			}
-
-			if len(currentTag.Name) > 0 {
-				tags = append(tags, currentTag)
-			}
-
-			currentTag = &Tag{}
-		default:
-			if currentTag == nil {
-				currentTag = &Tag{}
-			}
-			buffer.WriteRune(char)
+	for _, tag := range this {
+		if result != "" {
+			result += ", "
 		}
+		result += tag.String()
+	}
+
+	return result
+}
+
+func parseTag(rawTag string) ([]TagGroup, error) {
+	var state int
+	var buffer bytes.Buffer
+	var tagBuffer TagGroup
+
+	var groups []TagGroup
+	var tag *Tag = &Tag{}
+
+	getParserError := func(offset int, char rune) error {
+		return errors.New(fmt.Sprintf("Parser error: Unexpected character '%c' at position %d.", char, offset))
+	}
+
+	fmt.Println("Offset	Char	State")
+
+	stateNames := []string{"name", "option", "escape", "whitespace"}
+
+	for offset, char := range rawTag {
+		fmt.Printf("%d	%c	%s\n", offset, char, stateNames[state])
+		switch state {
+		case STATE_NAME:
+			switch char {
+			case '(':
+				if buffer.Len() == 0 {
+					return nil, getParserError(offset, char)
+				}
+				state = STATE_OPTION
+				tag.Name = buffer.String()
+				buffer.Reset()
+			case '|':
+				if buffer.Len() != 0 {
+					tag.Name = buffer.String()
+					tagBuffer = append(tagBuffer, tag)
+					buffer.Reset()
+					tag = &Tag{}
+				}
+				if len(tagBuffer) != 0 {
+					groups = append(groups, tagBuffer)
+					tagBuffer = make([]*Tag, 0)
+				}
+			case ',':
+				if buffer.Len() > 0 {
+					tag.Name = buffer.String()
+					buffer.Reset()
+				}
+
+				if len(tag.Name) > 0 {
+					tagBuffer = append(tagBuffer, tag)
+				}
+
+				tag = &Tag{}
+			default:
+				goto WRITE_CHAR
+			}
+			continue
+
+		case STATE_OPTION:
+			switch char {
+			case '\\':
+				state = STATE_OPTION_ESCAPE
+			case ')':
+				state = STATE_NAME
+				if buffer.Len() > 0 {
+					tag.Options = append(tag.Options, buffer.String())
+					tagBuffer = append(tagBuffer, tag)
+					tag = &Tag{}
+					buffer.Reset()
+				}
+			case ',':
+				if buffer.Len() > 0 {
+					state = STATE_OPTION_WHITESPACE
+					tag.Options = append(tag.Options, buffer.String())
+					buffer.Reset()
+				}
+			default:
+				goto WRITE_CHAR
+			}
+			continue
+
+		case STATE_OPTION_WHITESPACE:
+			state = STATE_OPTION
+
+			if char == ' ' || char == '	' {
+				continue
+			}
+
+		case STATE_OPTION_ESCAPE:
+			state = STATE_OPTION
+		}
+
+	WRITE_CHAR:
+		buffer.WriteRune(char)
 	}
 
 	if buffer.Len() > 0 {
-		currentTag.Name = buffer.String()
+		tag.Name = buffer.String()
 	}
 
-	if currentTag != nil && len(currentTag.Name) > 0 {
-		tags = append(tags, currentTag)
+	if tag != nil && len(tag.Name) > 0 {
+		tagBuffer = append(tagBuffer, tag)
 	}
 
-	return tags
+	if len(tagBuffer) > 0 {
+		groups = append(groups, tagBuffer)
+	}
+
+	fmt.Println(rawTag)
+
+	for _, group := range groups {
+		fmt.Println(group)
+	}
+
+	return groups, nil
 }
