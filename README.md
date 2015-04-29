@@ -109,6 +109,18 @@ Assert that a type is not empty. I.e. that a number or the length of a string is
 
 Pointers, strings, integers, floats, maps, arrays and slices.
 
+### Empty (`empty`)
+
+Assert that a type is empty. I.e. that a number or the length of a string is 0, or that the value of a pointer is `nil`.
+
+#### Examples
+
+    Value *string               `validate:"empty|numeric"` // 
+    
+#### Supports
+
+Pointers, strings, integers, floats, maps, arrays and slices.
+
 ### Not documented yet...
 
 * empty
@@ -134,6 +146,11 @@ Register a global validator by calling `validator.Register(name string, validato
 ### Local to struct
 
 Use the `func` validator tag to assign a custom validator method on your structure. See `func` under the `Validators` section above for more information.
+
+## Todo
+
+* Nil validator
+* Support for OR-based rules instead of context.StopValidate (i.e. `nil|numeric`)
 
 # License
 

@@ -28,7 +28,7 @@ func registerDefaultLocale(lc *core.Locale) {
 	lc.Set("min.cannotBeLessThan", "{field} cannot be less than %d.")
 	lc.Set("min.cannotContainLessItemsThan", "{field} cannot contain less than %d items.")
 	lc.Set("min.cannotContainLessKeysThan", "{field} cannot contain less than %d keys.")
-	lc.Set("max.cannotBeLongerThan", "{field} is longer than %d characters.")
+	lc.Set("max.cannotBeLongerThan", "{field} cannot be longer than %d characters.")
 	lc.Set("max.cannotBeGreaterThan", "{field} cannot be greater than %d.")
 	lc.Set("max.cannotContainMoreItemsThan", "{field} cannot contain more than %d items.")
 	lc.Set("max.cannotContainMoreKeysThan", "{field} cannot contain more than %d keys.")
