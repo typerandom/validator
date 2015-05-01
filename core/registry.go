@@ -4,19 +4,19 @@ import (
 	"errors"
 )
 
-type ValidatorFilter func(context ValidatorContext, options []string) error
+type ValidatorFn func(context ValidatorContext, options []string) error
 
-type ValidatorRegistry map[string]ValidatorFilter
+type ValidatorRegistry map[string]ValidatorFn
 
 func NewValidatorRegistry() ValidatorRegistry {
 	return make(ValidatorRegistry)
 }
 
-func (r ValidatorRegistry) Register(name string, validator ValidatorFilter) {
+func (r ValidatorRegistry) Register(name string, validator ValidatorFn) {
 	r[name] = validator
 }
 
-func (r ValidatorRegistry) Get(name string) (ValidatorFilter, error) {
+func (r ValidatorRegistry) Get(name string) (ValidatorFn, error) {
 	validator, ok := r[name]
 
 	if !ok {

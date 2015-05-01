@@ -8,7 +8,7 @@ var globalLock sync.Mutex
 var globalInitialized bool
 var globalDefaultValidator *validator
 
-func assertGlobalInit() {
+func getGlobalValidator() *validator {
 	if !globalInitialized {
 		globalLock.Lock()
 		defer globalLock.Unlock()
@@ -17,4 +17,5 @@ func assertGlobalInit() {
 			globalDefaultValidator = New()
 		}
 	}
+	return globalDefaultValidator
 }

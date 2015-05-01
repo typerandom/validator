@@ -16,13 +16,11 @@ func (this *validator) LoadLocale(jsonPath string) error {
 	return this.locale.LoadJson(jsonPath)
 }
 
-func (this *validator) Register(name string, validator core.ValidatorFilter) {
+func (this *validator) Register(name string, validator core.ValidatorFn) {
 	this.registry.Register(name, validator)
 }
 
 func (this *validator) Validate(value interface{}) *core.Errors {
-	assertGlobalInit()
-
 	context := &context{
 		validator: this,
 		errors:    core.NewErrors(),
@@ -31,11 +29,6 @@ func (this *validator) Validate(value interface{}) *core.Errors {
 	walkValidate(context, value, nil)
 
 	return context.errors
-}
-
-func Default() *validator {
-	assertGlobalInit()
-	return globalDefaultValidator
 }
 
 func New() *validator {
@@ -51,7 +44,14 @@ func New() *validator {
 	return validator
 }
 
+func Default() *validator {
+	return getGlobalValidator()
+}
+
+func Register(name string, validator core.ValidatorFn) {
+	getGlobalValidator().Register(name, validator)
+}
+
 func Validate(value interface{}) *core.Errors {
-	assertGlobalInit()
-	return globalDefaultValidator.Validate(value)
+	return getGlobalValidator().Validate(value)
 }

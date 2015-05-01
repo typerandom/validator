@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	STATE_NAME              = 0
-	STATE_OPTION            = 1
-	STATE_OPTION_ESCAPE     = 2
-	STATE_OPTION_WHITESPACE = 3
+	_STATE_NAME              = 0
+	_STATE_OPTION            = 1
+	_STATE_OPTION_ESCAPE     = 2
+	_STATE_OPTION_WHITESPACE = 3
 )
 
 type Tag struct {
@@ -65,13 +65,13 @@ func parseTag(rawTag string) ([]TagGroup, error) {
 	for offset, char := range rawTag {
 		//fmt.Printf("%d	%c	%s\n", offset, char, stateNames[state])
 		switch state {
-		case STATE_NAME:
+		case _STATE_NAME:
 			switch char {
 			case '(':
 				if buffer.Len() == 0 {
 					return nil, getParserError(offset, char)
 				}
-				state = STATE_OPTION
+				state = _STATE_OPTION
 				tag.Name = buffer.String()
 				buffer.Reset()
 			case '|':
@@ -101,12 +101,12 @@ func parseTag(rawTag string) ([]TagGroup, error) {
 			}
 			continue
 
-		case STATE_OPTION:
+		case _STATE_OPTION:
 			switch char {
 			case '\\':
-				state = STATE_OPTION_ESCAPE
+				state = _STATE_OPTION_ESCAPE
 			case ')':
-				state = STATE_NAME
+				state = _STATE_NAME
 				if buffer.Len() > 0 {
 					tag.Options = append(tag.Options, buffer.String())
 					tagBuffer = append(tagBuffer, tag)
@@ -115,7 +115,7 @@ func parseTag(rawTag string) ([]TagGroup, error) {
 				}
 			case ',':
 				if buffer.Len() > 0 {
-					state = STATE_OPTION_WHITESPACE
+					state = _STATE_OPTION_WHITESPACE
 					tag.Options = append(tag.Options, buffer.String())
 					buffer.Reset()
 				}
@@ -124,15 +124,15 @@ func parseTag(rawTag string) ([]TagGroup, error) {
 			}
 			continue
 
-		case STATE_OPTION_WHITESPACE:
-			state = STATE_OPTION
+		case _STATE_OPTION_WHITESPACE:
+			state = _STATE_OPTION
 
 			if char == ' ' || char == '	' {
 				continue
 			}
 
-		case STATE_OPTION_ESCAPE:
-			state = STATE_OPTION
+		case _STATE_OPTION_ESCAPE:
+			state = _STATE_OPTION
 		}
 
 	WRITE_CHAR:
