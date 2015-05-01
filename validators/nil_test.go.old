@@ -1,0 +1,44 @@
+package validator
+
+import (
+	"errors"
+	"testing"
+)
+
+func TestThatNilValidatorSucceedsForNilValue(t *testing.T) {
+	type Dummy struct {
+		Value *string `validate:"nil"`
+	}
+
+	dummy := &Dummy{Value: nil}
+
+	if errs := Validate(dummy); errs.Any() {
+		t.Fatalf("Didn't expect error, but got one (%s).", errs.First())
+	}
+}
+
+func TestThatNilValidatorFailsForNonNilValue(t *testing.T) {
+	value := ""
+
+	type Dummy struct {
+		Value *string `validate:"nil"`
+	}
+
+	dummy := &Dummy{Value: &value}
+
+	if errs := Validate(dummy); !errs.Any() {
+		t.Fatal(errors.New("Expected error, didn't get any."))
+	}
+}
+
+func TestThatNilValidatorFailsForNonPointerValue(t *testing.T) {
+	type Dummy struct {
+		Value string `validate:"nil"`
+	}
+
+	dummy := &Dummy{Value: ""}
+
+	if errs := Validate(dummy); !errs.Any() {
+		t.Fatal(errors.New("Expected error, didn't get any."))
+	}
+}

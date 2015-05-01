@@ -5,21 +5,21 @@ import (
 	"reflect"
 )
 
-func walkValidateArray(context *Context, normalized *core.NormalizedValue, parentField *core.ReflectedField) {
+func walkValidateArray(context *context, normalized *core.NormalizedValue, parentField *core.ReflectedField) {
 	valueType := reflect.ValueOf(normalized.Value)
 	for i := 0; i < valueType.Len(); i++ {
 		walkValidate(context, valueType.Index(i).Interface(), parentField)
 	}
 }
 
-func walkValidateMap(context *Context, normalized *core.NormalizedValue, parentField *core.ReflectedField) {
+func walkValidateMap(context *context, normalized *core.NormalizedValue, parentField *core.ReflectedField) {
 	valueType := reflect.ValueOf(normalized.Value)
 	for _, key := range valueType.MapKeys() {
 		walkValidate(context, valueType.MapIndex(key).Interface(), parentField)
 	}
 }
 
-func walkValidateStruct(context *Context, normalized *core.NormalizedValue, parentField *core.ReflectedField) {
+func walkValidateStruct(context *context, normalized *core.NormalizedValue, parentField *core.ReflectedField) {
 	fields, err := core.GetStructFields(normalized.Value, "validate")
 
 	if err != nil {
@@ -28,10 +28,10 @@ func walkValidateStruct(context *Context, normalized *core.NormalizedValue, pare
 	}
 
 	for _, field := range fields {
-		normalizedFieldValue, err := core.NormalizeValue(field.Value, false)
+		normalizedFieldValue, err := core.Normalize(field.Value)
 
 		if err != nil {
-			context.errors.Add(newValidatorError(field, nil, err))
+			context.errors.Add(core.NewValidatorError(field, nil, err))
 			continue
 		}
 
@@ -41,13 +41,13 @@ func walkValidateStruct(context *Context, normalized *core.NormalizedValue, pare
 		context.setSource(normalized.Value)
 		context.setValue(normalizedFieldValue)
 
-		var mostRecentErrorGroup *core.Errors
+		var mostRecentErrors *core.Errors
 
 		for _, tags := range field.TagGroups {
 			var errors *core.Errors
 
 			for _, tag := range tags {
-				validate, err := getValidator(tag.Name)
+				validate, err := context.validator.registry.Get(tag.Name)
 
 				if err != nil {
 					context.errors.Add(err)
@@ -58,33 +58,33 @@ func walkValidateStruct(context *Context, normalized *core.NormalizedValue, pare
 					if errors == nil {
 						errors = core.NewErrors()
 					}
-					errors.Add(newValidatorError(field, tag, err))
+					errors.Add(core.NewValidatorError(field, tag, err))
 				}
 			}
 
-			mostRecentErrorGroup = errors
+			mostRecentErrors = errors
 
 			if errors == nil {
 				break
 			}
 		}
 
-		if mostRecentErrorGroup != nil {
-			context.errors.AddMany(mostRecentErrorGroup)
+		if mostRecentErrors != nil {
+			context.errors.AddMany(mostRecentErrors)
 		}
 
 		walkValidate(context, context.Value, field)
 	}
 }
 
-func walkValidate(context *Context, value interface{}, parentField *core.ReflectedField) {
+func walkValidate(context *context, value interface{}, parentField *core.ReflectedField) {
 	var normalized *core.NormalizedValue
 
 	if typedValue, ok := value.(*core.NormalizedValue); ok {
 		normalized = typedValue
 	} else {
 		var err error
-		normalized, err = core.NormalizeValue(value, false)
+		normalized, err = core.Normalize(value)
 		if err != nil {
 			context.errors.Add(err)
 		}

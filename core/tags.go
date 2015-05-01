@@ -58,12 +58,12 @@ func parseTag(rawTag string) ([]TagGroup, error) {
 		return errors.New(fmt.Sprintf("Parser error: Unexpected character '%c' at position %d.", char, offset))
 	}
 
-	fmt.Println("Offset	Char	State")
+	//fmt.Println("Offset	Char	State")
 
-	stateNames := []string{"name", "option", "escape", "whitespace"}
+	//stateNames := []string{"name", "option", "escape", "whitespace"}
 
 	for offset, char := range rawTag {
-		fmt.Printf("%d	%c	%s\n", offset, char, stateNames[state])
+		//fmt.Printf("%d	%c	%s\n", offset, char, stateNames[state])
 		switch state {
 		case STATE_NAME:
 			switch char {
@@ -151,11 +151,11 @@ func parseTag(rawTag string) ([]TagGroup, error) {
 		groups = append(groups, tagBuffer)
 	}
 
-	fmt.Println(rawTag)
+	/*fmt.Println(rawTag)
 
 	for _, group := range groups {
 		fmt.Println(group)
-	}
+	}*/
 
 	return groups, nil
 }

@@ -1,0 +1,3 @@
+#/usr/bin/sh
+
+go test -bench=. -benchmem=true

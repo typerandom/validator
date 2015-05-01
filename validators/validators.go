@@ -1,24 +1,11 @@
-package validator
+package validators
 
 import (
 	"github.com/typerandom/validator/core"
 )
 
-var globalInitialized bool
-var globalLocale *core.Locale
-
-func assertGlobalInit() {
-	if !globalInitialized {
-		globalInitialized = true
-		if globalLocale == nil {
-			globalLocale = core.NewLocale()
-			registerDefaultLocale(globalLocale)
-			registerDefaultValidators()
-		}
-	}
-}
-
-func registerDefaultLocale(lc *core.Locale) {
+func RegisterDefaultLocale(lc *core.Locale) {
+	lc.Set("type.unsupported", "Validator '{validator}' does not support the type of field '{field}'.")
 	lc.Set("arguments.invalid", "Unable to parse '{validator}' validator options for field '{field}'.")
 	lc.Set("arguments.noneSupported", "Validator '{validator}' on field '{field}' does not support any arguments.")
 	lc.Set("arguments.singleRequired", "Validator '{validator}' on field '{field}' requires a single argument.")
@@ -43,40 +30,17 @@ func registerDefaultLocale(lc *core.Locale) {
 	lc.Set("time.mustBeValid", "{field} must be a valid time.")
 }
 
-func registerDefaultValidators() {
-	registerValidator("nil", nilValidator)
-	registerValidator("empty", emptyValidator)
-	registerValidator("not_empty", notEmptyValidator)
-	registerValidator("min", minValidator)
-	registerValidator("max", maxValidator)
-	registerValidator("lowercase", lowerCaseValidator)
-	registerValidator("uppercase", upperCaseValidator)
-	registerValidator("contain", containValidator)
-	registerValidator("equal", equalValidator)
-	registerValidator("regexp", regexpValidator)
-	registerValidator("numeric", numericValidator)
-	registerValidator("time", timeValidator)
-	registerValidator("func", funcValidator)
-}
-
-func LoadLocale(jsonPath string) error {
-	assertGlobalInit()
-	return globalLocale.LoadJson(jsonPath)
-}
-
-func Register(name string, validator validatorFilter) {
-	registerValidator(name, validator)
-}
-
-func Validate(value interface{}) *core.Errors {
-	assertGlobalInit()
-
-	context := &Context{
-		errors: core.NewErrors(),
-		locale: globalLocale,
-	}
-
-	walkValidate(context, value, nil)
-
-	return context.errors
+func RegisterDefaultValidators(r core.ValidatorRegistry) {
+	r.Register("nil", NilValidator)
+	r.Register("empty", EmptyValidator)
+	r.Register("not_empty", NotEmptyValidator)
+	r.Register("min", MinValidator)
+	r.Register("max", MaxValidator)
+	r.Register("lowercase", LowerCaseValidator)
+	r.Register("uppercase", UpperCaseValidator)
+	r.Register("contain", ContainValidator)
+	r.Register("equal", EqualValidator)
+	r.Register("regexp", RegexpValidator)
+	r.Register("numeric", NumericValidator)
+	r.Register("time", TimeValidator)
 }

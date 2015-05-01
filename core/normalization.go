@@ -51,7 +51,7 @@ func normalizeNumeric(value interface{}) (result interface{}, kind reflect.Kind,
 
 // TODO: Normalize slices to arrays?
 
-func NormalizeValue(value interface{}, isNil bool) (*NormalizedValue, error) {
+func normalizeInternal(value interface{}, isNil bool) (*NormalizedValue, error) {
 	valueType := reflect.ValueOf(value)
 	kind := valueType.Kind()
 
@@ -70,7 +70,7 @@ func NormalizeValue(value interface{}, isNil bool) (*NormalizedValue, error) {
 			value = valueType.Elem().Interface()
 		}
 
-		return NormalizeValue(value, isNil)
+		return normalizeInternal(value, isNil)
 
 	// Normalize all numeric types to their 64-bit counterparts (i.e. int8 -> int64, float32 -> float64)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32:
@@ -93,4 +93,8 @@ func NormalizeValue(value interface{}, isNil bool) (*NormalizedValue, error) {
 	}
 
 	return normalized, nil
+}
+
+func Normalize(value interface{}) (*NormalizedValue, error) {
+	return normalizeInternal(value, false)
 }

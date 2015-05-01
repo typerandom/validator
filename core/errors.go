@@ -2,7 +2,32 @@ package core
 
 import (
 	"fmt"
+	"strings"
 )
+
+func NewValidatorError(field *ReflectedField, tag *Tag, err error) *Error {
+	return &Error{
+		Field:  field,
+		Tag:    tag,
+		Source: err,
+	}
+}
+
+type Error struct {
+	Field  *ReflectedField
+	Tag    *Tag
+	Source error
+}
+
+func (this *Error) String() string {
+	return "{ error: " + this.Error() + "}"
+}
+
+func (this *Error) Error() string {
+	message := strings.Replace(this.Source.Error(), "{field}", this.Field.FullName(), 1)
+	message = strings.Replace(message, "{validator}", this.Tag.Name, 1)
+	return message
+}
 
 type Errors struct {
 	Items []error
