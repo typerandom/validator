@@ -3,6 +3,7 @@ package validators
 import (
 	"github.com/typerandom/validator/core"
 	"reflect"
+	"time"
 )
 
 func EmptyValidator(context core.ValidatorContext, options []string) error {
@@ -14,6 +15,8 @@ func EmptyValidator(context core.ValidatorContext, options []string) error {
 		return nil
 	}
 
+	// TODO: Look into Type.IsZero() and see how much of these "zero" checks it covers.
+
 	switch typedValue := context.Value().(type) {
 	case string:
 		if len(typedValue) == 0 {
@@ -21,6 +24,18 @@ func EmptyValidator(context core.ValidatorContext, options []string) error {
 		}
 	case int64:
 		if typedValue == 0 {
+			return nil
+		}
+	case float64:
+		if typedValue == 0 {
+			return nil
+		}
+	case bool:
+		if typedValue == false {
+			return nil
+		}
+	case time.Time:
+		if typedValue.IsZero() {
 			return nil
 		}
 	}

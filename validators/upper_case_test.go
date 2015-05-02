@@ -104,6 +104,6 @@ func TestThatUpperCaseValidatorFailsForUnsupportedValueType(t *testing.T) {
 	err := UpperCaseValidator(ctx, []string{})
 
 	if err.Error() != "type.unsupported" {
-		t.Fatalf("Exepected unsupported type error, got %s.", err)
+		t.Fatalf("Expected unsupported type error, got %s.", err)
 	}
 }

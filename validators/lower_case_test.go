@@ -104,6 +104,6 @@ func TestThatLowerCaseValidatorFailsForUnsupportedValueType(t *testing.T) {
 	err := LowerCaseValidator(ctx, []string{})
 
 	if err.Error() != "type.unsupported" {
-		t.Fatalf("Exepected unsupported type error, got %s.", err)
+		t.Fatalf("Expected unsupported type error, got %s.", err)
 	}
 }

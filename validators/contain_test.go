@@ -75,6 +75,6 @@ func TestThatContainValidatorFailsForUnsupportedValueType(t *testing.T) {
 	err := ContainValidator(ctx, []string{"123"})
 
 	if err.Error() != "type.unsupported" {
-		t.Fatalf("Exepected unsupported type error, got %s.", err)
+		t.Fatalf("Expected unsupported type error, got %s.", err)
 	}
 }
