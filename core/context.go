@@ -20,7 +20,7 @@ type testContext struct {
 	isNil        bool
 }
 
-func NewTestContext(value interface{}) ValidatorContext {
+func NewTestContext(value interface{}) *testContext {
 	ctx := &testContext{}
 
 	if err := ctx.SetValue(value); err != nil {

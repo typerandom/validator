@@ -11,7 +11,7 @@ func MinValidator(context core.ValidatorContext, options []string) error {
 		return context.NewError("arguments.singleRequired")
 	}
 
-	minValue, err := strconv.Atoi(options[0])
+	minValue, err := strconv.ParseFloat(options[0], 64)
 
 	if err != nil {
 		return context.NewError("arguments.invalid")
@@ -19,7 +19,7 @@ func MinValidator(context core.ValidatorContext, options []string) error {
 
 	switch typedValue := context.Value().(type) {
 	case string:
-		if context.IsNil() || len(typedValue) < minValue {
+		if context.IsNil() || len(typedValue) < int(minValue) {
 			return context.NewError("min.cannotBeShorterThan", minValue)
 		}
 		return nil
@@ -29,7 +29,7 @@ func MinValidator(context core.ValidatorContext, options []string) error {
 		}
 		return nil
 	case float64:
-		if context.IsNil() || typedValue < float64(minValue) {
+		if context.IsNil() || typedValue < minValue {
 			return context.NewError("min.cannotBeLessThan", minValue)
 		}
 		return nil
@@ -37,12 +37,12 @@ func MinValidator(context core.ValidatorContext, options []string) error {
 
 	switch context.OriginalKind() {
 	case reflect.Array, reflect.Slice:
-		if reflect.ValueOf(context.Value()).Len() < minValue {
+		if reflect.ValueOf(context.Value()).Len() < int(minValue) {
 			return context.NewError("min.cannotContainLessItemsThan", minValue)
 		}
 		return nil
 	case reflect.Map:
-		if len(reflect.ValueOf(context.Value()).MapKeys()) < minValue {
+		if len(reflect.ValueOf(context.Value()).MapKeys()) < int(minValue) {
 			return context.NewError("min.cannotContainLessKeysThan", minValue)
 		}
 		return nil

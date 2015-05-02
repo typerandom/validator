@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestThatItSucceedsForNilValue(t *testing.T) {
+func TestThatNilValidatorSucceedsForNilValue(t *testing.T) {
 	var dummy *string
 
 	ctx := core.NewTestContext(dummy)
@@ -17,7 +17,7 @@ func TestThatItSucceedsForNilValue(t *testing.T) {
 	}
 }
 
-func TestThatItFailsForInvalidOptions(t *testing.T) {
+func TestThatNilValidatorFailsForInvalidOptions(t *testing.T) {
 	var dummy *string
 
 	ctx := core.NewTestContext(dummy)
@@ -34,7 +34,7 @@ func TestThatItFailsForInvalidOptions(t *testing.T) {
 	}
 }
 
-func TestThatItFailsForNonNilValue(t *testing.T) {
+func TestThatNilValidatorFailsForNonNilValue(t *testing.T) {
 	dummy := ""
 
 	ctx := core.NewTestContext(&dummy)
@@ -51,7 +51,7 @@ func TestThatItFailsForNonNilValue(t *testing.T) {
 	}
 }
 
-func TestThatItFailsForNonPointerValue(t *testing.T) {
+func TestThatNilValidatorFailsForNonPointerValue(t *testing.T) {
 	dummy := ""
 
 	ctx := core.NewTestContext(dummy)
