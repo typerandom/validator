@@ -2,8 +2,10 @@ package test
 
 import (
 	"errors"
+	asaskevichGoValidator "github.com/asaskevich/govalidator"
 	validator "github.com/typerandom/validator"
 	goValidator "gopkg.in/validator.v2"
+	"strconv"
 	"testing"
 )
 
@@ -62,5 +64,37 @@ func BenchmarkCompetitorGoValidatorMin(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		goValidator.Validate(validFoo)
 		goValidator.Validate(invalidFoo)
+	}
+}
+
+func BenchmarkCompetitorAsaskevichGoValidatorMin(b *testing.B) {
+	type Foo struct {
+		StringValue string `validate:"min_str"`
+		IntValue    int    `validate:"min_int"`
+	}
+
+	asaskevichGoValidator.TagMap["min_str"] = asaskevichGoValidator.Validator(func(value string) bool {
+		if len(value) < 5 || len(value) > 10 {
+			return false
+		}
+		return true
+	})
+
+	asaskevichGoValidator.TagMap["min_int"] = asaskevichGoValidator.Validator(func(value string) bool {
+		intValue, _ := strconv.ParseInt(value, 10, 32)
+
+		if intValue < 5 || intValue > 10 {
+			return false
+		}
+
+		return true
+	})
+
+	validFoo := &Foo{StringValue: "Foobar", IntValue: 7}
+	invalidFoo := &Foo{StringValue: "Fo", IntValue: 3}
+
+	for i := 0; i < b.N; i++ {
+		asaskevichGoValidator.ValidateStruct(validFoo)
+		asaskevichGoValidator.ValidateStruct(invalidFoo)
 	}
 }

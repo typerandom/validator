@@ -26,9 +26,6 @@ func TimeValidator(context core.ValidatorContext, options []string) error {
 
 		return nil
 	case time.Time:
-		if len(options) != 0 {
-			return context.NewError("arguments.noneSupported")
-		}
 		return nil
 	}
 

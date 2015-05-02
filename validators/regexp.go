@@ -14,6 +14,10 @@ func RegexpValidator(context core.ValidatorContext, options []string) error {
 	pattern := options[0]
 
 	if testValue, ok := context.Value().(string); ok {
+		if context.IsNil() {
+			return context.NewError("regexp.mustMatchPattern", pattern)
+		}
+
 		matched, err := regexp.MatchString(pattern, testValue)
 
 		if err != nil {
