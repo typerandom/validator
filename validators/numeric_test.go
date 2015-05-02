@@ -66,7 +66,7 @@ func TestThatNumericValidatorSucceedsForFloatStringValue(t *testing.T) {
 	}
 }
 
-func TestThatNumericValidatorFailsForValueOfUnsupportedType(t *testing.T) {
+func TestThatNumericValidatorFailsForUnsupportedValueType(t *testing.T) {
 	type Dummy struct{}
 
 	ctx := core.NewTestContext(&Dummy{})
