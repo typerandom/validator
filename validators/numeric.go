@@ -16,7 +16,7 @@ func NumericValidator(context core.ValidatorContext, options []string) error {
 			return context.NewError("numeric.mustBeNumeric")
 		}
 
-		value, err := strconv.ParseInt(typedValue, 10, 32)
+		value, err := strconv.ParseFloat(typedValue, 64)
 
 		if err != nil {
 			return context.NewError("numeric.mustBeNumeric")

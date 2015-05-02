@@ -11,7 +11,6 @@ func TestThatMaxValidatorFailsForInvalidOptions(t *testing.T) {
 	dummy := 100
 
 	ctx := core.NewTestContext(dummy)
-
 	err := MaxValidator(ctx, []string{})
 
 	if err == nil {
