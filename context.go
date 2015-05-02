@@ -19,6 +19,10 @@ type context struct {
 	source interface{}
 }
 
+func (this *context) Source() interface{} {
+	return this.source
+}
+
 func (this *context) Value() interface{} {
 	return this.value
 }

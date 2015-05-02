@@ -39,7 +39,6 @@ func New() *validator {
 
 	validators.RegisterDefaultLocale(validator.locale)
 	validators.RegisterDefaultValidators(validator.registry)
-	validator.Register("func", funcValidator)
 
 	return validator
 }

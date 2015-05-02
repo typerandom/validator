@@ -43,4 +43,5 @@ func RegisterDefaultValidators(r core.ValidatorRegistry) {
 	r.Register("regexp", RegexpValidator)
 	r.Register("numeric", NumericValidator)
 	r.Register("time", TimeValidator)
+	r.Register("func", FuncValidator)
 }

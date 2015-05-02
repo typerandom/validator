@@ -1,11 +1,11 @@
-package validator
+package validators
 
 import (
 	"errors"
 	"github.com/typerandom/validator/core"
 )
 
-func funcValidator(context core.ValidatorContext, options []string) error {
+func FuncValidator(context core.ValidatorContext, options []string) error {
 	var funcName string
 
 	switch len(options) {

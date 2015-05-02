@@ -1,65 +1,32 @@
 package core
 
 import (
-	"errors"
 	"reflect"
 )
 
 type ValidatorContext interface {
-	IsNil() bool
-	Value() interface{}
-	SetValue(value interface{}) error
+	// Source returns the object from which the field is referenced from.
+	Source() interface{}
+
+	// Field returns the field from the struct which this value was referenced from.
 	Field() *ReflectedField
+
+	// Value returns the normalized value.
+	Value() interface{}
+
+	// SetValue normalizes the value and sets value, originalKind and nil of the context.
+	// Returns error if the value fails to be normalized.
+	SetValue(value interface{}) error
+
+	// IsNil indicates whether or not the value was nil before normalization.
+	// I.e. because normalization removes pointers from value.
+	IsNil() bool
+
+	// OriginalKind returns the kind (non pointer) before value type was normalized.
+	// I.e. if the type of the value set was *int8, then the OriginalKind would be int8.
 	OriginalKind() reflect.Kind
+
+	// NewError returns a formatted error based on a locale key and format parameters.
+	// If the locale key does not exist, then an error is returned.
 	NewError(localeKey string, args ...interface{}) error
-}
-
-type testContext struct {
-	value        interface{}
-	originalKind reflect.Kind
-	isNil        bool
-}
-
-func NewTestContext(value interface{}) *testContext {
-	ctx := &testContext{}
-
-	if err := ctx.SetValue(value); err != nil {
-		return nil
-	}
-
-	return ctx
-}
-
-func (ctx *testContext) IsNil() bool {
-	return ctx.isNil
-}
-
-func (ctx *testContext) Value() interface{} {
-	return ctx.value
-}
-
-func (ctx *testContext) SetValue(value interface{}) error {
-	normalized, err := Normalize(value)
-
-	if err != nil {
-		return err
-	}
-
-	ctx.value = normalized.Value
-	ctx.originalKind = normalized.OriginalKind
-	ctx.isNil = normalized.IsNil
-
-	return nil
-}
-
-func (ctx *testContext) Field() *ReflectedField {
-	return nil
-}
-
-func (ctx *testContext) OriginalKind() reflect.Kind {
-	return ctx.originalKind
-}
-
-func (ctx *testContext) NewError(localeKey string, args ...interface{}) error {
-	return errors.New(localeKey)
 }
