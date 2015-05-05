@@ -30,11 +30,9 @@ func FuncValidator(context core.ValidatorContext, options []string) error {
 		if returnValues[0] == nil {
 			return nil
 		} else if err, ok := returnValues[0].(error); ok {
-			return errors.New(err.Error())
-		} else {
-			return errors.New("Invalid return value of validation method '" + context.Field().Parent.FullName(funcName) + "'. Return value must be of type 'error'.")
+			return err
 		}
 	}
 
-	return errors.New("Validator not supported.")
+	return errors.New("Invalid return value(s) of validation method '" + context.Field().Parent.FullName(funcName) + "'. Return value must be of type 'error'.")
 }

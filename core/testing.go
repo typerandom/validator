@@ -11,6 +11,8 @@ type testContext struct {
 	value        interface{}
 	originalKind reflect.Kind
 	isNil        bool
+
+	field *ReflectedField
 }
 
 func NewTestContext(value interface{}) *testContext {
@@ -53,8 +55,12 @@ func (this *testContext) SetValue(value interface{}) error {
 	return nil
 }
 
+func (this *testContext) SetField(field *ReflectedField) {
+	this.field = field
+}
+
 func (this *testContext) Field() *ReflectedField {
-	return nil
+	return this.field
 }
 
 func (this *testContext) OriginalKind() reflect.Kind {
