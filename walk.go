@@ -1,21 +1,37 @@
 package validator
 
 import (
+	"errors"
 	"github.com/typerandom/validator/core"
 	"reflect"
 )
 
+func canWalk(value reflect.Kind) bool {
+	switch value {
+	case reflect.Ptr, reflect.Array, reflect.Slice, reflect.Map, reflect.Struct:
+		return true
+	default:
+		return false
+	}
+}
+
 func walkValidateArray(context *context, normalized *core.NormalizedValue, parentField *core.ReflectedField) {
 	valueType := reflect.ValueOf(normalized.Value)
 	for i := 0; i < valueType.Len(); i++ {
-		walkValidate(context, valueType.Index(i).Interface(), parentField)
+		value := valueType.Index(i)
+		if canWalk(value.Kind()) {
+			walkValidate(context, value.Interface(), parentField)
+		}
 	}
 }
 
 func walkValidateMap(context *context, normalized *core.NormalizedValue, parentField *core.ReflectedField) {
 	valueType := reflect.ValueOf(normalized.Value)
 	for _, key := range valueType.MapKeys() {
-		walkValidate(context, valueType.MapIndex(key).Interface(), parentField)
+		value := valueType.MapIndex(key)
+		if canWalk(value.Kind()) {
+			walkValidate(context, value.Interface(), parentField)
+		}
 	}
 }
 
@@ -73,7 +89,9 @@ func walkValidateStruct(context *context, normalized *core.NormalizedValue, pare
 			context.errors.AddMany(mostRecentErrors)
 		}
 
-		walkValidate(context, context.Value, field)
+		if canWalk(normalizedFieldValue.OriginalKind) {
+			walkValidate(context, normalizedFieldValue, field)
+		}
 	}
 }
 
@@ -97,5 +115,7 @@ func walkValidate(context *context, value interface{}, parentField *core.Reflect
 		walkValidateMap(context, normalized, parentField)
 	case reflect.Struct:
 		walkValidateStruct(context, normalized, parentField)
+	default:
+		context.errors.Add(errors.New("Unable to directly validate type '" + normalized.OriginalKind.String() + "'."))
 	}
 }
