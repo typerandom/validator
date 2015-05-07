@@ -1,6 +1,7 @@
-package validator
+package validator_test
 
 import (
+	. "github.com/typerandom/validator"
 	"github.com/typerandom/validator/core"
 	"testing"
 )
@@ -8,6 +9,19 @@ import (
 func TestThatValidatorDefaultIsNotNil(t *testing.T) {
 	if Default() == nil {
 		t.Fatalf("Expected non nil value, got nil value.")
+	}
+}
+
+func TestThatValidatorDefaultResolvesToSameInstance(t *testing.T) {
+	validatorA := Default()
+	validatorB := Default()
+
+	if validatorA == nil || validatorB == nil {
+		t.Fatalf("Expected non nil value, got nil value.")
+	}
+
+	if validatorA != validatorB {
+		t.Fatalf("Expected resolved global validators to be same, got different.")
 	}
 }
 
@@ -25,7 +39,7 @@ func TestThatValidatorNewReturnsNewValidator(t *testing.T) {
 }
 
 func TestThatValidatorCanRegisterAndValidateCustomFunc(t *testing.T) {
-	Default().locale.Set("test.isNotTest", "test.isNotTest")
+	Default().Locale().Set("test.isNotTest", "test.isNotTest")
 
 	Register("is_test", func(ctx core.ValidatorContext, options []string) error {
 		if val, ok := ctx.Value().(string); ok {

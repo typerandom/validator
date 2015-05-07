@@ -12,8 +12,8 @@ type validator struct {
 	lock     sync.Mutex
 }
 
-func (this *validator) LoadLocale(jsonPath string) error {
-	return this.locale.LoadJson(jsonPath)
+func (this *validator) Locale() *core.Locale {
+	return this.locale
 }
 
 func (this *validator) Register(name string, validator core.ValidatorFn) {

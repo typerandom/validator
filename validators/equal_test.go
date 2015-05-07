@@ -1,8 +1,9 @@
-package validators
+package validators_test
 
 import (
 	"fmt"
 	"github.com/typerandom/validator/core"
+	. "github.com/typerandom/validator/validators"
 	"testing"
 )
 

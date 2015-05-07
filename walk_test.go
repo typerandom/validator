@@ -1,6 +1,7 @@
-package validator
+package validator_test
 
 import (
+	. "github.com/typerandom/validator"
 	"reflect"
 	"testing"
 )
