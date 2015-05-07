@@ -52,14 +52,14 @@ func normalizeNumeric(value interface{}) (result interface{}, kind reflect.Kind,
 // TODO: Normalize slices to arrays?
 
 func normalizeInternal(value interface{}, isNil bool) (*NormalizedValue, error) {
-	valueType := reflect.ValueOf(value)
-	kind := valueType.Kind()
+	reflectedValue := reflect.ValueOf(value)
+	kind := reflectedValue.Kind()
 
-	switch valueType.Kind() {
+	switch reflectedValue.Kind() {
 	// Dereference the pointer and normalize that value
 	case reflect.Ptr:
 		// If it's a nil pointer then flag the value as nil, obtain the inner element and create/return a zero value for the type
-		if valueType.IsNil() {
+		if reflectedValue.IsNil() {
 			isNil = true
 
 			innerElement := reflect.TypeOf(value).Elem()
@@ -67,7 +67,7 @@ func normalizeInternal(value interface{}, isNil bool) (*NormalizedValue, error) 
 
 			value = reflect.Zero(innerElement).Interface()
 		} else {
-			value = valueType.Elem().Interface()
+			value = reflectedValue.Elem().Interface()
 		}
 
 		return normalizeInternal(value, isNil)

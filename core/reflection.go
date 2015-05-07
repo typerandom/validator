@@ -8,10 +8,14 @@ import (
 )
 
 type ReflectedField struct {
+	Index     int
 	Parent    *ReflectedField
 	Name      string
-	Value     interface{}
 	TagGroups []TagGroup
+}
+
+func (this *ReflectedField) GetValue(sourceStruct reflect.Value) interface{} {
+	return sourceStruct.Field(this.Index).Interface()
 }
 
 func (this *ReflectedField) FullName(postfix ...string) string {
@@ -35,24 +39,31 @@ func (this *ReflectedField) FullName(postfix ...string) string {
 	return fullName
 }
 
-func reflectValue(value interface{}) (reflect.Type, reflect.Value) {
-	reflectValue := reflect.ValueOf(value)
-	valueType := reflectValue.Type()
+func reflectValue(value interface{}) reflect.Type {
+	reflectedValueType := reflect.TypeOf(value)
 
-	if valueType.Kind() == reflect.Ptr {
-		valueType = valueType.Elem()
+	if reflectedValueType.Kind() == reflect.Ptr {
+		reflectedValueType = reflectedValueType.Elem()
 	}
 
-	return valueType, reflect.Indirect(reflectValue)
+	return reflectedValueType
 }
+
+var structFieldCache map[reflect.Type][]*ReflectedField = map[reflect.Type][]*ReflectedField{}
 
 func GetStructFields(value interface{}, tagName string) ([]*ReflectedField, error) {
 	var fields []*ReflectedField
 
-	valueType, reflectedValue := reflectValue(value)
+	//reflectedValue := reflect.Indirect(reflect.ValueOf(value))
 
-	for i := 0; i < valueType.NumField(); i++ {
-		field := valueType.Field(i)
+	reflectedType := reflectValue(value)
+
+	if cachedFields, ok := structFieldCache[reflectedType]; ok {
+		return cachedFields, nil
+	}
+
+	for i := 0; i < reflectedType.NumField(); i++ {
+		field := reflectedType.Field(i)
 		if unicode.IsUpper(rune(field.Name[0])) { // only grab exported fields
 			tagValue := field.Tag.Get(tagName)
 
@@ -63,14 +74,16 @@ func GetStructFields(value interface{}, tagName string) ([]*ReflectedField, erro
 			}
 
 			reflectedField := &ReflectedField{
+				Index:     i,
 				Name:      field.Name,
-				Value:     reflectedValue.Field(i).Interface(),
 				TagGroups: tagGroups,
 			}
 
 			fields = append(fields, reflectedField)
 		}
 	}
+
+	structFieldCache[reflectedType] = fields
 
 	return fields, nil
 }

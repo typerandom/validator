@@ -43,8 +43,12 @@ func walkValidateStruct(context *context, normalized *core.NormalizedValue, pare
 		return
 	}
 
+	sourceStruct := reflect.Indirect(reflect.ValueOf(normalized.Value))
+
 	for _, field := range fields {
-		normalizedFieldValue, err := core.Normalize(field.Value)
+		fieldValue := field.GetValue(sourceStruct)
+
+		normalizedFieldValue, err := core.Normalize(fieldValue)
 
 		if err != nil {
 			context.errors.Add(core.NewValidatorError(field, nil, err))
