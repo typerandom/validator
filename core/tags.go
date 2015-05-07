@@ -46,7 +46,7 @@ func (this TagGroup) String() string {
 	return result
 }
 
-func parseTag(rawTag string) ([]TagGroup, error) {
+func ParseTag(rawTag string) ([]TagGroup, error) {
 	var state int
 	var buffer bytes.Buffer
 	var tagBuffer TagGroup

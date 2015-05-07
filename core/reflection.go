@@ -67,7 +67,7 @@ func GetStructFields(value interface{}, tagName string) ([]*ReflectedField, erro
 		if unicode.IsUpper(rune(field.Name[0])) { // only grab exported fields
 			tagValue := field.Tag.Get(tagName)
 
-			tagGroups, err := parseTag(tagValue)
+			tagGroups, err := ParseTag(tagValue)
 
 			if err != nil {
 				return nil, err
