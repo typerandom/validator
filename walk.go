@@ -74,7 +74,7 @@ func walkValidateStruct(context *context, normalized *core.NormalizedValue, pare
 					return
 				}
 
-				if err = validate(context, tag.Options); err != nil {
+				if err = validate(context, tag.Parameters); err != nil {
 					if errors == nil {
 						errors = core.NewErrors()
 					}

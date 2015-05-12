@@ -1,10 +1,14 @@
 package core_test
 
-import (
+/*import (
 	"fmt"
 	. "github.com/typerandom/validator/core"
 	"testing"
 )
+
+type Foo struct {
+	Value string `validator:"regex()"`
+}
 
 func TestThatValidTagsAreParsedAsExpected(t *testing.T) {
 	tags := map[string]string{
@@ -23,11 +27,37 @@ func TestThatValidTagsAreParsedAsExpected(t *testing.T) {
 		tagGroups, err := ParseTag(tag)
 
 		if err != nil {
-			t.Fatalf("Didn't expect error, but got %s.", err)
+			t.Fatalf("Tag '%s'. Didn't expect error, but got %s.", tag, err)
 		}
 
 		if expected != fmt.Sprint(tagGroups) {
-			t.Fatalf("Expected '%s' but got '%s'.", expected, fmt.Sprint(tagGroups))
+			t.Fatalf("Tag '%s'. Expected '%s' but got '%s'.", tag, expected, fmt.Sprint(tagGroups))
 		}
 	}
 }
+
+func TestThatInvalidTagsFailWithError(t *testing.T) {
+	tags := []string{
+		`,`,
+		`min,`,
+		`min(`,
+		`min)`,
+		`min|`,
+		`|`,
+		`)`,
+		`(`,
+	}
+
+	for _, tag := range tags {
+		tagGroups, err := ParseTag(tag)
+
+		if len(tagGroups) != 0 {
+			t.Fatalf("Tag: '%s'. Didn't expect any tag groups, but got %d.", tag, len(tagGroups))
+		}
+
+		if err == nil {
+			t.Fatalf("Tag '%s'. Expected error, but didn't get any.", tag)
+		}
+	}
+}
+*/

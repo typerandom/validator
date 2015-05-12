@@ -2,6 +2,7 @@ package core
 
 import (
 	"errors"
+	"github.com/typerandom/validator/core/parser"
 	"reflect"
 	"strings"
 	"unicode"
@@ -11,7 +12,7 @@ type ReflectedField struct {
 	Index     int
 	Parent    *ReflectedField
 	Name      string
-	TagGroups []TagGroup
+	TagGroups []parser.Methods
 }
 
 func (this *ReflectedField) GetValue(sourceStruct reflect.Value) interface{} {
@@ -67,7 +68,7 @@ func GetStructFields(value interface{}, tagName string) ([]*ReflectedField, erro
 		if unicode.IsUpper(rune(field.Name[0])) { // only grab exported fields
 			tagValue := field.Tag.Get(tagName)
 
-			tagGroups, err := ParseTag(tagValue)
+			tagGroups, err := parser.Parse(tagValue)
 
 			if err != nil {
 				return nil, err
