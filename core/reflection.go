@@ -9,10 +9,10 @@ import (
 )
 
 type ReflectedField struct {
-	Index     int
-	Parent    *ReflectedField
-	Name      string
-	TagGroups []parser.Methods
+	Index        int
+	Parent       *ReflectedField
+	Name         string
+	MethodGroups []parser.Methods
 }
 
 func (this *ReflectedField) GetValue(sourceStruct reflect.Value) interface{} {
@@ -55,8 +55,6 @@ var structFieldCache map[reflect.Type][]*ReflectedField = map[reflect.Type][]*Re
 func GetStructFields(value interface{}, tagName string) ([]*ReflectedField, error) {
 	var fields []*ReflectedField
 
-	//reflectedValue := reflect.Indirect(reflect.ValueOf(value))
-
 	reflectedType := reflectValue(value)
 
 	if cachedFields, ok := structFieldCache[reflectedType]; ok {
@@ -68,16 +66,16 @@ func GetStructFields(value interface{}, tagName string) ([]*ReflectedField, erro
 		if unicode.IsUpper(rune(field.Name[0])) { // only grab exported fields
 			tagValue := field.Tag.Get(tagName)
 
-			tagGroups, err := parser.Parse(tagValue)
+			methodGroups, err := parser.Parse(tagValue)
 
 			if err != nil {
 				return nil, err
 			}
 
 			reflectedField := &ReflectedField{
-				Index:     i,
-				Name:      field.Name,
-				TagGroups: tagGroups,
+				Index:        i,
+				Name:         field.Name,
+				MethodGroups: methodGroups,
 			}
 
 			fields = append(fields, reflectedField)

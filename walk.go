@@ -63,22 +63,22 @@ func walkValidateStruct(context *context, normalized *core.NormalizedValue, pare
 
 		var mostRecentErrors *core.Errors
 
-		for _, tags := range field.TagGroups {
+		for _, methods := range field.MethodGroups {
 			var errors *core.Errors
 
-			for _, tag := range tags {
-				validate, err := context.validator.registry.Get(tag.Name)
+			for _, method := range methods {
+				validate, err := context.validator.registry.Get(method.Name)
 
 				if err != nil {
 					context.errors.Add(err)
 					return
 				}
 
-				if err = validate(context, tag.Parameters); err != nil {
+				if err = validate(context, method.Parameters); err != nil {
 					if errors == nil {
 						errors = core.NewErrors()
 					}
-					errors.Add(core.NewValidatorError(field, tag, err))
+					errors.Add(core.NewValidatorError(field, method, err))
 				}
 			}
 
