@@ -49,28 +49,29 @@ func Parse(text string) ([]Methods, error) {
 	}
 
 	var methodGroups []Methods
-
-	var currentMethods Methods
-	var currentMethod *Method
-	var currentParameters []string
+	var methods Methods
+	var method *Method
 
 	for _, token := range scanner.tokens {
 		switch token.type_ {
 		case TOKEN_GROUP:
-			currentMethods = Methods{}
-			methodGroups = append(methodGroups, currentMethods)
+			methodGroups = append(methodGroups, methods)
+			methods = Methods{}
 		case TOKEN_METHOD:
-			currentMethod = &Method{
+			method = &Method{
 				Name: token.value,
 			}
-			currentMethods = append(currentMethods, currentMethod)
-			currentParameters = []string{}
+			methods = append(methods, method)
 		case TOKEN_PARAM_FLOAT, TOKEN_PARAM_INTEGER, TOKEN_PARAM_STRING:
-			currentParameters = append(currentParameters, token.value)
+			method.Parameters = append(method.Parameters, token.value)
 		case TOKEN_ERROR:
 			return nil, errors.New(token.value)
+		default:
+			return nil, errors.New("Unable to parse. Unhandled token type.")
 		}
 	}
+
+	methodGroups = append(methodGroups, methods)
 
 	return methodGroups, nil
 }
