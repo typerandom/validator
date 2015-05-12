@@ -7,15 +7,16 @@ import (
 
 func TestThatValidSyntaxIsParsedAsExpected(t *testing.T) {
 	tests := map[string]string{
-		``:                                             `[]`,
-		`min`:                                          `[{ name: 'min', params: (none) }]`,
-		`min()`:                                        `[{ name: 'min', params: (none) }]`,
-		`min(1)`:                                       `[{ name: 'min', params: '1' }]`,
-		`min(1, 2)`:                                    `[{ name: 'min', params: '1', '2' }]`,
-		`min(1, 2,3)`:                                  `[{ name: 'min', params: '1', '2', '3' }]`,
-		`min,min(1)`:                                   `[{ name: 'min', params: (none) }, { name: 'min', params: '1' }]`,
-		`min|min(1)`:                                   `[{ name: 'min', params: (none) } { name: 'min', params: '1' }]`,
-		`min(1),min(1,2),min|min|min(1),min(3, 4),min`: `[{ name: 'min', params: '1' }, { name: 'min', params: '1', '2' }, { name: 'min', params: (none) } { name: 'min', params: (none) } { name: 'min', params: '1' }, { name: 'min', params: '3', '4' }, { name: 'min', params: (none) }]`,
+		``:                                                           `[]`,
+		`min`:                                                        `[{ name: 'min', params: (none) }]`,
+		`min()`:                                                      `[{ name: 'min', params: (none) }]`,
+		`min(1)`:                                                     `[{ name: 'min', params: '1' }]`,
+		`min(1, 2)`:                                                  `[{ name: 'min', params: '1', '2' }]`,
+		`min(1, 2,3)`:                                                `[{ name: 'min', params: '1', '2', '3' }]`,
+		`min,min(1)`:                                                 `[{ name: 'min', params: (none) }, { name: 'min', params: '1' }]`,
+		`min|min(1)`:                                                 `[{ name: 'min', params: (none) } { name: 'min', params: '1' }]`,
+		`min(1),min(1,2),min|min|min(1),min(3, 4),min`:               `[{ name: 'min', params: '1' }, { name: 'min', params: '1', '2' }, { name: 'min', params: (none) } { name: 'min', params: (none) } { name: 'min', params: '1' }, { name: 'min', params: '3', '4' }, { name: 'min', params: (none) }]`,
+		`m(123)|m(1.23)|m()|m(1),m(1, 2),m(1,2,3),m(1,´test123´, 3)`: `[{ name: 'm', params: '123' } { name: 'm', params: '1.23' } { name: 'm', params: (none) } { name: 'm', params: '1' }, { name: 'm', params: '1', '2' }, { name: 'm', params: '1', '2', '3' }, { name: 'm', params: '1', 'test123', '3' }]`,
 	}
 
 	for test, expected := range tests {
@@ -33,14 +34,23 @@ func TestThatValidSyntaxIsParsedAsExpected(t *testing.T) {
 
 func TestThatInvalidSyntaxFailsWithError(t *testing.T) {
 	tests := []string{
-		`,`,
 		`min,`,
 		`min(`,
 		`min)`,
 		`min|`,
+		`min()|`,
+		`|min()`,
+		`min(),`,
+		`,min()`,
+		`min(,)`,
+		`min(123,)`,
+		`min(´test)`,
+		`min(test´)`,
+		`,`,
 		`|`,
 		`)`,
 		`(`,
+		`´`,
 	}
 
 	for _, test := range tests {
