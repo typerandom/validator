@@ -2,10 +2,11 @@ package core
 
 import (
 	"fmt"
+	"github.com/typerandom/validator/core/parser"
 	"strings"
 )
 
-func NewValidatorError(field *ReflectedField, tag *Tag, err error) *Error {
+func NewValidatorError(field *ReflectedField, tag *parser.Method, err error) *Error {
 	return &Error{
 		Field:  field,
 		Tag:    tag,
@@ -15,7 +16,7 @@ func NewValidatorError(field *ReflectedField, tag *Tag, err error) *Error {
 
 type Error struct {
 	Field  *ReflectedField
-	Tag    *Tag
+	Tag    *parser.Method
 	Source error
 }
 
