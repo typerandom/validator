@@ -4,10 +4,23 @@ import (
 	"bytes"
 )
 
+const (
+	space = ' '
+	tab   = 9
+)
+
 type lexer func(*scanner) lexer
 
-func isAlpha(char rune) bool {
+func isUpperCaseAlpha(char rune) bool {
+	return char >= 'A' && char <= 'Z'
+}
+
+func isLowerCaseAlpha(char rune) bool {
 	return char >= 'a' && char <= 'z'
+}
+
+func isAlpha(char rune) bool {
+	return isLowerCaseAlpha(char) || isUpperCaseAlpha(char)
 }
 
 func isNumeric(char rune) bool {
@@ -19,7 +32,7 @@ func isAlphaNumeric(char rune) bool {
 }
 
 func isWhiteSpace(char rune) bool {
-	return char == ' ' || char == 9 // 9 = tab
+	return char == space || char == tab
 }
 
 func lexWhiteSpace(scanner *scanner, returnTo lexer) lexer {
@@ -56,7 +69,7 @@ func skipIndexesOfString(value string, indexesToSkip []int) string {
 	return buffer.String()
 }
 
-func lexParamValueText(scanner *scanner) lexer {
+func lexParamValueBoundedText(scanner *scanner) lexer {
 	var escapes []int
 
 TEXT_SCAN:
@@ -87,6 +100,27 @@ TEXT_SCAN:
 	return lexParams
 }
 
+func lexParamValueUnboundedText(scanner *scanner) lexer {
+TEXT_SCAN:
+	for {
+		switch char := scanner.next(); {
+		case isAlphaNumeric(char) || char == '_':
+			continue
+		case char == ',' || char == ')':
+			scanner.backup()
+			break TEXT_SCAN
+		case char == eof:
+			return scanner.UnexpectedEndError()
+		default:
+			return scanner.unexpectedCharError()
+		}
+	}
+
+	scanner.emit(TOKEN_PARAM_STRING)
+
+	return lexParams
+}
+
 func lexParamValueNumber(scanner *scanner) lexer {
 	var returnTo lexer
 	isFloat := false
@@ -105,10 +139,7 @@ NUMBER_SCAN:
 				return scanner.unexpectedCharError()
 			}
 			isFloat = true
-		case char == ',':
-			returnTo = lexParams
-			break NUMBER_SCAN
-		case char == ')':
+		case char == ',' || char == ')':
 			returnTo = lexParams
 			break NUMBER_SCAN
 		case char == eof:
@@ -134,11 +165,14 @@ func lexParamValue(scanner *scanner) lexer {
 	case char == '+' || char == '-' || isNumeric(char):
 		scanner.backup()
 		return lexParamValueNumber
-	case isWhiteSpace(char):
-		return lexWhiteSpace(scanner, lexParamValue)
+	case isAlpha(char):
+		scanner.backup()
+		return lexParamValueUnboundedText
 	case char == '´':
 		scanner.skip()
-		return lexParamValueText
+		return lexParamValueBoundedText
+	case isWhiteSpace(char):
+		return lexWhiteSpace(scanner, lexParamValue)
 	default:
 		return scanner.unexpectedCharError()
 	}
@@ -207,6 +241,9 @@ func lexMethod(scanner *scanner) lexer {
 		scanner.backup()
 		return lexGroup
 	case char == ',':
+		if scanner.peek() == eof {
+			return scanner.unexpectedCharError()
+		}
 		scanner.skip()
 		return lexMethod
 	case char == '(':

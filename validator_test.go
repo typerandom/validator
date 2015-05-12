@@ -73,7 +73,7 @@ func TestThatValidatorCanRegisterAndValidateCustomFunc(t *testing.T) {
 
 func TestThatValidatorCanValidateStructValue(t *testing.T) {
 	type Dummy struct {
-		Value *string `validate:"nil|equal(´test´)|equal(´other_test´)"`
+		Value *string `validate:"nil|equal(test)|equal(other_test)"`
 	}
 
 	if errs := Validate(&Dummy{Value: nil}); errs.Any() {
