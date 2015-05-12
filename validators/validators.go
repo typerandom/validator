@@ -7,6 +7,7 @@ import (
 func RegisterDefaultLocale(lc *core.Locale) {
 	lc.Set("type.unsupported", "Validator '{validator}' does not support the type of field '{field}'.")
 	lc.Set("arguments.invalid", "Unable to parse '{validator}' validator options for field '{field}'.")
+	lc.Set("arguments.invalidType", "Validator '{validator}' on field '{field}' requires parameter %d to be of type %s.")
 	lc.Set("arguments.noneSupported", "Validator '{validator}' on field '{field}' does not support any arguments.")
 	lc.Set("arguments.singleRequired", "Validator '{validator}' on field '{field}' requires a single argument.")
 	lc.Set("arguments.oneOrMoreRequired", "Validator '{validator}' on field '{field}' requires at least one argument.")

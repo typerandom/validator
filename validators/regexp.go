@@ -6,29 +6,31 @@ import (
 	"regexp"
 )
 
-func RegexpValidator(context core.ValidatorContext, options []string) error {
-	if len(options) != 1 {
+func RegexpValidator(context core.ValidatorContext, args []interface{}) error {
+	if len(args) != 1 {
 		return context.NewError("arguments.singleRequired")
 	}
 
-	pattern := options[0]
+	if pattern, ok := args[0].(string); ok {
+		if testValue, ok := context.Value().(string); ok {
+			if context.IsNil() {
+				return context.NewError("regexp.mustMatchPattern", pattern)
+			}
 
-	if testValue, ok := context.Value().(string); ok {
-		if context.IsNil() {
-			return context.NewError("regexp.mustMatchPattern", pattern)
+			matched, err := regexp.MatchString(pattern, testValue)
+
+			if err != nil {
+				return errors.New("Unexpected regexp error for validator field '{field}': " + err.Error())
+			}
+
+			if !matched {
+				return context.NewError("regexp.mustMatchPattern", pattern)
+			}
+
+			return nil
 		}
-
-		matched, err := regexp.MatchString(pattern, testValue)
-
-		if err != nil {
-			return errors.New("Unexpected regexp error for validator field '{field}': " + err.Error())
-		}
-
-		if !matched {
-			return context.NewError("regexp.mustMatchPattern", pattern)
-		}
-
-		return nil
+	} else {
+		return context.NewError("arguments.invalidType", 1, "string")
 	}
 
 	return context.NewError("type.unsupported")

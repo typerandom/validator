@@ -10,7 +10,7 @@ func TestThatRegexpValidatorFailsForInvalidOptions(t *testing.T) {
 	dummy := 100
 
 	ctx := core.NewTestContext(dummy)
-	err := RegexpValidator(ctx, []string{})
+	err := RegexpValidator(ctx, []interface{}{})
 
 	if err == nil {
 		t.Fatalf("Expected error, didn't get any.")
@@ -20,7 +20,7 @@ func TestThatRegexpValidatorFailsForInvalidOptions(t *testing.T) {
 		t.Fatalf("Expected single argument required error.")
 	}
 
-	err = RegexpValidator(ctx, []string{"123", "123"})
+	err = RegexpValidator(ctx, []interface{}{"123", "123"})
 
 	if err == nil {
 		t.Fatalf("Expected error, didn't get any.")
@@ -35,7 +35,7 @@ func TestThatRegexpValidatorSucceedsForMatchingStringValue(t *testing.T) {
 	dummy := "1test."
 
 	ctx := core.NewTestContext(dummy)
-	opts := []string{"^\\dtest\\.$"}
+	opts := []interface{}{"^\\dtest\\.$"}
 
 	if err := RegexpValidator(ctx, opts); err != nil {
 		t.Fatalf("Didn't expect error, but got one (%s).", err)
@@ -46,7 +46,7 @@ func TestThatRegexpValidatorFailsForNonMatchingStringValue(t *testing.T) {
 	dummy := "1test"
 
 	ctx := core.NewTestContext(dummy)
-	opts := []string{"^\\dtest\\.$"}
+	opts := []interface{}{"^\\dtest\\.$"}
 
 	err := RegexpValidator(ctx, opts)
 
@@ -63,7 +63,7 @@ func TestThatRegexpValidatorFailsForStringNilValue(t *testing.T) {
 	var dummy *string
 
 	ctx := core.NewTestContext(dummy)
-	opts := []string{"^\\dtest\\.$"}
+	opts := []interface{}{"^\\dtest\\.$"}
 
 	err := RegexpValidator(ctx, opts)
 
@@ -80,7 +80,7 @@ func TestThatRegexpValidatorFailsForUnsupportedValueType(t *testing.T) {
 	type Dummy struct{}
 
 	ctx := core.NewTestContext(&Dummy{})
-	err := NumericValidator(ctx, []string{})
+	err := NumericValidator(ctx, []interface{}{})
 
 	if err.Error() != "type.unsupported" {
 		t.Fatalf("Expected unsupported type error, got %s.", err)

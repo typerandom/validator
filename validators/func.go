@@ -5,14 +5,18 @@ import (
 	"github.com/typerandom/validator/core"
 )
 
-func FuncValidator(context core.ValidatorContext, options []string) error {
+func FuncValidator(context core.ValidatorContext, args []interface{}) error {
 	var funcName string
 
-	switch len(options) {
+	switch len(args) {
 	case 0:
 		funcName = "Validate" + context.Field().Name
 	case 1:
-		funcName = options[0]
+		if val, ok := args[0].(string); ok {
+			funcName = val
+		} else {
+			return context.NewError("arguments.invalidType", 1, "string")
+		}
 	default:
 		return context.NewError("arguments.singleRequired")
 	}

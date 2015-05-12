@@ -26,7 +26,7 @@ type ValidatorContext interface {
 	// I.e. if the type of the value set was *int8, then the OriginalKind would be int8.
 	OriginalKind() reflect.Kind
 
-	// NewError returns a formatted error based on a locale key and format parameters.
+	// NewError returns a formatted error based on a locale key and format arguments.
 	// If the locale key does not exist, then an error is returned.
 	NewError(localeKey string, args ...interface{}) error
 }

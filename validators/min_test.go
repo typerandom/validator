@@ -2,7 +2,6 @@ package validators_test
 
 import (
 	"errors"
-	"fmt"
 	"github.com/typerandom/validator/core"
 	. "github.com/typerandom/validator/validators"
 	"testing"
@@ -12,7 +11,7 @@ func TestThatMinValidatorFailsForInvalidOptions(t *testing.T) {
 	dummy := 100
 
 	ctx := core.NewTestContext(dummy)
-	err := MinValidator(ctx, []string{})
+	err := MinValidator(ctx, []interface{}{})
 
 	if err == nil {
 		t.Fatal(errors.New("Expected error, didn't get any."))
@@ -22,17 +21,17 @@ func TestThatMinValidatorFailsForInvalidOptions(t *testing.T) {
 		t.Fatal(errors.New("Expected single argument required error."))
 	}
 
-	err = MinValidator(ctx, []string{"abc"})
+	err = MinValidator(ctx, []interface{}{"abc"})
 
 	if err == nil {
 		t.Fatal(errors.New("Expected error, didn't get any."))
 	}
 
-	if err.Error() != "arguments.invalid" {
+	if err.Error() != "arguments.invalidType" {
 		t.Fatal(errors.New("Expected invalid arguments error."))
 	}
 
-	err = MinValidator(ctx, []string{"123", "123"})
+	err = MinValidator(ctx, []interface{}{"123", "123"})
 
 	if err == nil {
 		t.Fatal(errors.New("Expected error, didn't get any."))
@@ -43,27 +42,27 @@ func TestThatMinValidatorFailsForInvalidOptions(t *testing.T) {
 	}
 }
 
-func testThatMinValidatorSucceedsForValueOverLimit(t *testing.T, limit interface{}, dummy interface{}) {
+func testThatMinValidatorSucceedsForValueOverLimit(t *testing.T, limit float64, dummy interface{}) {
 	ctx := core.NewTestContext(dummy)
-	opts := []string{fmt.Sprintf("%v", limit)}
+	opts := []interface{}{limit}
 
 	if err := MinValidator(ctx, opts); err != nil {
 		t.Fatalf("Didn't expect error, but got one (%s).", err)
 	}
 }
 
-func testThatMinValidatorSucceedsForValueOnLimit(t *testing.T, limit interface{}, dummy interface{}) {
+func testThatMinValidatorSucceedsForValueOnLimit(t *testing.T, limit float64, dummy interface{}) {
 	ctx := core.NewTestContext(dummy)
-	opts := []string{fmt.Sprintf("%v", limit)}
+	opts := []interface{}{limit}
 
 	if err := MinValidator(ctx, opts); err != nil {
 		t.Fatalf("Didn't expect error, but got one (%s).", err)
 	}
 }
 
-func testThatMinValidatorFailsForValueUnderLimit(t *testing.T, limit interface{}, dummy interface{}, expectedErr string) {
+func testThatMinValidatorFailsForValueUnderLimit(t *testing.T, limit float64, dummy interface{}, expectedErr string) {
 	ctx := core.NewTestContext(dummy)
-	opts := []string{fmt.Sprintf("%v", limit)}
+	opts := []interface{}{limit}
 
 	err := MinValidator(ctx, opts)
 

@@ -23,7 +23,7 @@ func newFuncTestContext(source interface{}, fieldName string) core.ValidatorCont
 func TestThatFuncValidatorFailsForInvalidOptions(t *testing.T) {
 	ctx := core.NewTestContext(nil)
 
-	err := FuncValidator(ctx, []string{"123", "123"})
+	err := FuncValidator(ctx, []interface{}{"123", "123"})
 
 	if err == nil {
 		t.Fatalf("Expected error, didn't get any.")
@@ -40,7 +40,7 @@ func TestThatFuncValidatorFailsForMissingDefaultMethod(t *testing.T) {
 	}
 
 	ctx := newFuncTestContext(&Dummy{}, "TestValue")
-	err := FuncValidator(ctx, []string{})
+	err := FuncValidator(ctx, []interface{}{})
 
 	if err == nil {
 		t.Fatalf("Expected error, didn't get any.")
@@ -57,7 +57,7 @@ func TestThatFuncValidatorFailsForMissingExplicitMethod(t *testing.T) {
 	}
 
 	ctx := newFuncTestContext(&Dummy{}, "TestValue")
-	err := FuncValidator(ctx, []string{"TestSomeValue"})
+	err := FuncValidator(ctx, []interface{}{"TestSomeValue"})
 
 	if err == nil {
 		t.Fatalf("Expected error, didn't get any.")
@@ -91,7 +91,7 @@ func TestThatFuncValidatorFailsForExistingDefaultMethod(t *testing.T) {
 	dummy := &failingFuncDummy{}
 
 	ctx := newFuncTestContext(dummy, "TestValue")
-	err := FuncValidator(ctx, []string{})
+	err := FuncValidator(ctx, []interface{}{})
 
 	if err == nil {
 		t.Fatalf("Expected error, didn't get any.")
@@ -106,7 +106,7 @@ func TestThatFuncValidatorFailsForMissingExplicitMethodWithInvalidInputParams(t 
 	dummy := &failingFuncDummy{}
 
 	ctx := newFuncTestContext(dummy, "TestValue")
-	err := FuncValidator(ctx, []string{"TestInvalidInputParams"})
+	err := FuncValidator(ctx, []interface{}{"TestInvalidInputParams"})
 
 	if err == nil {
 		t.Fatalf("Expected error, didn't get any.")
@@ -121,7 +121,7 @@ func TestThatFuncValidatorFailsForMissingExplicitMethodWithInvalidOutputParams(t
 	dummy := &failingFuncDummy{}
 
 	ctx := newFuncTestContext(dummy, "TestValue")
-	err := FuncValidator(ctx, []string{"TestInvalidOutputParams"})
+	err := FuncValidator(ctx, []interface{}{"TestInvalidOutputParams"})
 
 	if err == nil {
 		t.Fatalf("Expected error, didn't get any.")
@@ -148,7 +148,7 @@ func TestThatFuncValidatorSucceedsForExistingDefaultMethod(t *testing.T) {
 	dummy := &passingFuncDummy{}
 
 	ctx := newFuncTestContext(dummy, "TestValue")
-	err := FuncValidator(ctx, []string{})
+	err := FuncValidator(ctx, []interface{}{})
 
 	if err != nil {
 		t.Fatalf("Didn't expect error, got %s.", err)
@@ -159,7 +159,7 @@ func TestThatFuncValidatorSucceedsForExistingExplicitMethod(t *testing.T) {
 	dummy := &passingFuncDummy{}
 
 	ctx := newFuncTestContext(dummy, "TestValue")
-	err := FuncValidator(ctx, []string{"TestSomeValue"})
+	err := FuncValidator(ctx, []interface{}{"TestSomeValue"})
 
 	if err != nil {
 		t.Fatalf("Didn't expect error, got %s.", err)

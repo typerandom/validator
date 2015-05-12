@@ -5,26 +5,28 @@ import (
 	"time"
 )
 
-func TimeValidator(context core.ValidatorContext, options []string) error {
+func TimeValidator(context core.ValidatorContext, args []interface{}) error {
 	switch typedValue := context.Value().(type) {
 	case string:
-		if len(options) != 1 {
+		if len(args) != 1 {
 			return context.NewError("arguments.singleRequired")
 		}
 
-		layout := options[0]
+		if layout, ok := args[0].(string); ok {
+			value, err := time.Parse(layout, typedValue)
 
-		value, err := time.Parse(layout, typedValue)
+			if err != nil {
+				return context.NewError("time.mustBeValid")
+			}
 
-		if err != nil {
-			return context.NewError("time.mustBeValid")
+			if err := context.SetValue(value); err != nil {
+				return err
+			}
+
+			return nil
+		} else {
+			return context.NewError("arguments.invalidType", 1, "string")
 		}
-
-		if err := context.SetValue(value); err != nil {
-			return err
-		}
-
-		return nil
 	case time.Time:
 		return nil
 	}

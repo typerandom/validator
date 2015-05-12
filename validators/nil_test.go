@@ -11,7 +11,7 @@ func TestThatNilValidatorFailsForInvalidOptions(t *testing.T) {
 	var dummy *string
 
 	ctx := core.NewTestContext(dummy)
-	opts := []string{"123"}
+	opts := []interface{}{"123"}
 
 	err := NilValidator(ctx, opts)
 
@@ -28,7 +28,7 @@ func TestThatNilValidatorSucceedsForNilValue(t *testing.T) {
 	var dummy *string
 
 	ctx := core.NewTestContext(dummy)
-	opts := []string{}
+	opts := []interface{}{}
 
 	if err := NilValidator(ctx, opts); err != nil {
 		t.Fatalf("Didn't expect error, but got one (%s).", err)
@@ -39,7 +39,7 @@ func TestThatNilValidatorFailsForNonNilValue(t *testing.T) {
 	dummy := ""
 
 	ctx := core.NewTestContext(&dummy)
-	opts := []string{}
+	opts := []interface{}{}
 
 	err := NilValidator(ctx, opts)
 
@@ -56,7 +56,7 @@ func TestThatNilValidatorFailsForNonPointerValue(t *testing.T) {
 	dummy := ""
 
 	ctx := core.NewTestContext(dummy)
-	opts := []string{}
+	opts := []interface{}{}
 
 	err := NilValidator(ctx, opts)
 

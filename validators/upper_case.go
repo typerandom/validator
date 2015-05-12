@@ -5,8 +5,8 @@ import (
 	"unicode"
 )
 
-func UpperCaseValidator(context core.ValidatorContext, options []string) error {
-	if len(options) > 0 {
+func UpperCaseValidator(context core.ValidatorContext, args []interface{}) error {
+	if len(args) > 0 {
 		return context.NewError("arguments.noneSupported")
 	}
 

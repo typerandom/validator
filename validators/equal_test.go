@@ -11,7 +11,7 @@ func TestThatEqualValidatorFailsForInvalidOptions(t *testing.T) {
 	dummy := 100
 
 	ctx := core.NewTestContext(dummy)
-	err := EqualValidator(ctx, []string{})
+	err := EqualValidator(ctx, []interface{}{})
 
 	if err == nil {
 		t.Fatalf("Expected error, didn't get any.")
@@ -21,7 +21,7 @@ func TestThatEqualValidatorFailsForInvalidOptions(t *testing.T) {
 		t.Fatalf("Expected single argument required error.")
 	}
 
-	err = EqualValidator(ctx, []string{"123", "123"})
+	err = EqualValidator(ctx, []interface{}{"123", "123"})
 
 	if err == nil {
 		t.Fatalf("Expected error, didn't get any.")
@@ -34,7 +34,7 @@ func TestThatEqualValidatorFailsForInvalidOptions(t *testing.T) {
 
 func testThatEqualValidatorSucceedsForEqualValue(t *testing.T, expect interface{}, dummy interface{}) {
 	ctx := core.NewTestContext(dummy)
-	opts := []string{fmt.Sprintf("%v", expect)}
+	opts := []interface{}{fmt.Sprintf("%v", expect)}
 
 	if err := EqualValidator(ctx, opts); err != nil {
 		t.Fatalf("Didn't expect error, but got one (%s).", err)
@@ -43,7 +43,7 @@ func testThatEqualValidatorSucceedsForEqualValue(t *testing.T, expect interface{
 
 func testThatEqualValidatorFailsForNonEqualValue(t *testing.T, expect interface{}, dummy interface{}) {
 	ctx := core.NewTestContext(dummy)
-	opts := []string{fmt.Sprintf("%v", expect)}
+	opts := []interface{}{fmt.Sprintf("%v", expect)}
 
 	err := EqualValidator(ctx, opts)
 
@@ -104,7 +104,7 @@ func TestThatEqualValidatorFailsForUnsupportedValueType(t *testing.T) {
 	type Dummy struct{}
 
 	ctx := core.NewTestContext(&Dummy{})
-	err := EqualValidator(ctx, []string{"123"})
+	err := EqualValidator(ctx, []interface{}{"123"})
 
 	if err.Error() != "type.unsupported" {
 		t.Fatalf("Expected unsupported type error, got %s.", err)

@@ -2,7 +2,6 @@ package validators_test
 
 import (
 	"errors"
-	"fmt"
 	"github.com/typerandom/validator/core"
 	. "github.com/typerandom/validator/validators"
 	"testing"
@@ -12,7 +11,7 @@ func TestThatMaxValidatorFailsForInvalidOptions(t *testing.T) {
 	dummy := 100
 
 	ctx := core.NewTestContext(dummy)
-	err := MaxValidator(ctx, []string{})
+	err := MaxValidator(ctx, []interface{}{})
 
 	if err == nil {
 		t.Fatal(errors.New("Expected error, didn't get any."))
@@ -22,17 +21,17 @@ func TestThatMaxValidatorFailsForInvalidOptions(t *testing.T) {
 		t.Fatal(errors.New("Expected single argument required error."))
 	}
 
-	err = MaxValidator(ctx, []string{"abc"})
+	err = MaxValidator(ctx, []interface{}{"abc"})
 
 	if err == nil {
 		t.Fatal(errors.New("Expected error, didn't get any."))
 	}
 
-	if err.Error() != "arguments.invalid" {
+	if err.Error() != "arguments.invalidType" {
 		t.Fatal(errors.New("Expected invalid arguments error."))
 	}
 
-	err = MaxValidator(ctx, []string{"123", "123"})
+	err = MaxValidator(ctx, []interface{}{"123", "123"})
 
 	if err == nil {
 		t.Fatal(errors.New("Expected error, didn't get any."))
@@ -43,9 +42,9 @@ func TestThatMaxValidatorFailsForInvalidOptions(t *testing.T) {
 	}
 }
 
-func testThatMaxValidatorFailsForValueOverLimit(t *testing.T, limit interface{}, dummy interface{}, expectedErr string) {
+func testThatMaxValidatorFailsForValueOverLimit(t *testing.T, limit float64, dummy interface{}, expectedErr string) {
 	ctx := core.NewTestContext(dummy)
-	opts := []string{fmt.Sprintf("%v", limit)}
+	opts := []interface{}{limit}
 
 	err := MaxValidator(ctx, opts)
 
@@ -54,22 +53,22 @@ func testThatMaxValidatorFailsForValueOverLimit(t *testing.T, limit interface{},
 	}
 
 	if err.Error() != expectedErr {
-		t.Fatal(errors.New("Expected cannot be more than error."))
+		t.Fatalf("Expected cannot be more than error, got %s.", err)
 	}
 }
 
-func testThatMaxValidatorSucceedsForValueOnLimit(t *testing.T, limit interface{}, dummy interface{}) {
+func testThatMaxValidatorSucceedsForValueOnLimit(t *testing.T, limit float64, dummy interface{}) {
 	ctx := core.NewTestContext(dummy)
-	opts := []string{fmt.Sprintf("%v", limit)}
+	opts := []interface{}{limit}
 
 	if err := MaxValidator(ctx, opts); err != nil {
 		t.Fatalf("Didn't expect error, but got one (%s).", err)
 	}
 }
 
-func testThatMaxValidatorSucceedsForValueUnderLimit(t *testing.T, limit interface{}, dummy interface{}) {
+func testThatMaxValidatorSucceedsForValueUnderLimit(t *testing.T, limit float64, dummy interface{}) {
 	ctx := core.NewTestContext(dummy)
-	opts := []string{fmt.Sprintf("%v", limit)}
+	opts := []interface{}{limit}
 
 	if err := MaxValidator(ctx, opts); err != nil {
 		t.Fatalf("Didn't expect error, but got one (%s).", err)

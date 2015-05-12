@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-type ValidatorFn func(context ValidatorContext, options []string) error
+type ValidatorFn func(context ValidatorContext, args []interface{}) error
 
 type ValidatorRegistry map[string]ValidatorFn
 

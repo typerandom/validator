@@ -69,7 +69,7 @@ func skipIndexesOfString(value string, indexesToSkip []int) string {
 	return buffer.String()
 }
 
-func lexParamValueBoundedText(scanner *scanner) lexer {
+func lexArgValueBoundedText(scanner *scanner) lexer {
 	var escapes []int
 
 TEXT_SCAN:
@@ -92,15 +92,15 @@ TEXT_SCAN:
 		textValue = skipIndexesOfString(textValue, escapes)
 	}
 
-	scanner.emitValue(TOKEN_PARAM_STRING, textValue)
+	scanner.emitValue(TOKEN_ARG_STRING, textValue)
 
 	scanner.next()
 	scanner.skip()
 
-	return lexParams
+	return lexArgs
 }
 
-func lexParamValueUnboundedText(scanner *scanner) lexer {
+func lexArgValueUnboundedText(scanner *scanner) lexer {
 TEXT_SCAN:
 	for {
 		switch char := scanner.next(); {
@@ -116,12 +116,19 @@ TEXT_SCAN:
 		}
 	}
 
-	scanner.emit(TOKEN_PARAM_STRING)
+	switch scanner.text() {
+	case "true", "false":
+		scanner.emit(TOKEN_ARG_BOOLEAN)
+	case "nil":
+		scanner.emit(TOKEN_ARG_NIL)
+	default:
+		scanner.emit(TOKEN_ARG_STRING)
+	}
 
-	return lexParams
+	return lexArgs
 }
 
-func lexParamValueNumber(scanner *scanner) lexer {
+func lexArgValueNumber(scanner *scanner) lexer {
 	var returnTo lexer
 	isFloat := false
 
@@ -140,7 +147,7 @@ NUMBER_SCAN:
 			}
 			isFloat = true
 		case char == ',' || char == ')':
-			returnTo = lexParams
+			returnTo = lexArgs
 			break NUMBER_SCAN
 		case char == eof:
 			return scanner.UnexpectedEndError()
@@ -152,39 +159,39 @@ NUMBER_SCAN:
 	scanner.backup()
 
 	if isFloat {
-		scanner.emit(TOKEN_PARAM_FLOAT)
+		scanner.emit(TOKEN_ARG_FLOAT)
 	} else {
-		scanner.emit(TOKEN_PARAM_INTEGER)
+		scanner.emit(TOKEN_ARG_INTEGER)
 	}
 
 	return returnTo
 }
 
-func lexParamValue(scanner *scanner) lexer {
+func lexArgValue(scanner *scanner) lexer {
 	switch char := scanner.next(); {
 	case char == '+' || char == '-' || isNumeric(char):
 		scanner.backup()
-		return lexParamValueNumber
+		return lexArgValueNumber
 	case isAlpha(char):
 		scanner.backup()
-		return lexParamValueUnboundedText
+		return lexArgValueUnboundedText
 	case char == '´':
 		scanner.skip()
-		return lexParamValueBoundedText
+		return lexArgValueBoundedText
 	case isWhiteSpace(char):
-		return lexWhiteSpace(scanner, lexParamValue)
+		return lexWhiteSpace(scanner, lexArgValue)
 	default:
 		return scanner.unexpectedCharError()
 	}
 }
 
-func lexParams(scanner *scanner) lexer {
+func lexArgs(scanner *scanner) lexer {
 	switch char := scanner.next(); {
 	case char == ',':
 		scanner.skip()
-		return lexParamValue
+		return lexArgValue
 	case char == '(':
-		var returnTo lexer = lexParamValue
+		var returnTo lexer = lexArgValue
 
 		if scanner.peek() == ')' {
 			scanner.next()
@@ -217,7 +224,7 @@ NAME_SCAN:
 			returnTo = lexMethod
 			break NAME_SCAN
 		case char == '(':
-			returnTo = lexParams
+			returnTo = lexArgs
 			break NAME_SCAN
 		case char == eof:
 			break NAME_SCAN
@@ -248,7 +255,7 @@ func lexMethod(scanner *scanner) lexer {
 		return lexMethod
 	case char == '(':
 		scanner.skip()
-		return lexParams
+		return lexArgs
 	case char == eof:
 		return nil
 	default:

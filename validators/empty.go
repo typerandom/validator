@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-func EmptyValidator(context core.ValidatorContext, options []string) error {
-	if len(options) > 0 {
+func EmptyValidator(context core.ValidatorContext, args []interface{}) error {
+	if len(args) > 0 {
 		return context.NewError("arguments.noneSupported")
 	}
 

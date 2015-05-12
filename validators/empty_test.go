@@ -11,7 +11,7 @@ func TestThatEmptyValidatorFailsForInvalidOptions(t *testing.T) {
 	var dummy *string
 
 	ctx := core.NewTestContext(dummy)
-	opts := []string{"123"}
+	opts := []interface{}{"123"}
 
 	err := EmptyValidator(ctx, opts)
 
@@ -26,7 +26,7 @@ func TestThatEmptyValidatorFailsForInvalidOptions(t *testing.T) {
 
 func testThatEmptyValidatorSucceedsForEmptyValue(t *testing.T, dummy interface{}) {
 	ctx := core.NewTestContext(dummy)
-	opts := []string{}
+	opts := []interface{}{}
 
 	if err := EmptyValidator(ctx, opts); err != nil {
 		t.Fatalf("Didn't expect error, but got one (%s).", err)
@@ -35,7 +35,7 @@ func testThatEmptyValidatorSucceedsForEmptyValue(t *testing.T, dummy interface{}
 
 func testThatEmptyValidatorFailsForNonEmptyValue(t *testing.T, dummy interface{}) {
 	ctx := core.NewTestContext(&dummy)
-	err := EmptyValidator(ctx, []string{})
+	err := EmptyValidator(ctx, []interface{}{})
 
 	if err == nil {
 		t.Fatal(errors.New("Expected error, didn't get any."))
@@ -116,7 +116,7 @@ func TestThatEmptyValidatorFailsForUnhandledType(t *testing.T) {
 	type Dummy struct{}
 
 	ctx := core.NewTestContext(&Dummy{})
-	err := EmptyValidator(ctx, []string{})
+	err := EmptyValidator(ctx, []interface{}{})
 
 	if err.Error() != "empty.isNotEmpty" {
 		t.Fatalf("Expected unsupported type error, got %s.", err)

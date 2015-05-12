@@ -11,7 +11,7 @@ func TestThatNumericValidatorFailsForInvalidOptions(t *testing.T) {
 	var dummy *string
 
 	ctx := core.NewTestContext(dummy)
-	opts := []string{"123"}
+	opts := []interface{}{"123"}
 
 	err := NumericValidator(ctx, opts)
 
@@ -26,7 +26,7 @@ func TestThatNumericValidatorFailsForInvalidOptions(t *testing.T) {
 
 func testThatNumericValidatorSucceedsForValue(t *testing.T, value interface{}) core.ValidatorContext {
 	ctx := core.NewTestContext(value)
-	opts := []string{}
+	opts := []interface{}{}
 
 	if err := NumericValidator(ctx, opts); err != nil {
 		t.Fatalf("Didn't expect error, but got one (%s).", err)
@@ -71,7 +71,7 @@ func TestThatNumericValidatorFailsForUnsupportedValueType(t *testing.T) {
 	type Dummy struct{}
 
 	ctx := core.NewTestContext(&Dummy{})
-	err := NumericValidator(ctx, []string{})
+	err := NumericValidator(ctx, []interface{}{})
 
 	if err.Error() != "type.unsupported" {
 		t.Fatalf("Expected unsupported type error, got %s.", err)
