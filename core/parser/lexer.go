@@ -106,7 +106,7 @@ TEXT_SCAN:
 		switch char := scanner.next(); {
 		case isAlphaNumeric(char) || char == '_':
 			continue
-		case char == ',' || char == ')':
+		case char == ',' || char == ')' || isWhiteSpace(char):
 			scanner.backup()
 			break TEXT_SCAN
 		case char == eof:
@@ -146,7 +146,7 @@ NUMBER_SCAN:
 				return scanner.unexpectedCharError()
 			}
 			isFloat = true
-		case char == ',' || char == ')':
+		case char == ',' || char == ')' || isWhiteSpace(char):
 			returnTo = lexArgs
 			break NUMBER_SCAN
 		case char == eof:
@@ -204,6 +204,8 @@ func lexArgs(scanner *scanner) lexer {
 	case char == ')':
 		scanner.skip()
 		return lexMethod
+	case isWhiteSpace(char):
+		return lexWhiteSpace(scanner, lexArgs)
 	default:
 		return scanner.unexpectedCharError()
 	}
@@ -265,7 +267,7 @@ func lexMethod(scanner *scanner) lexer {
 
 func lexGroup(scanner *scanner) lexer {
 	switch char := scanner.next(); {
-	case isAlphaNumeric(char) || char == '_':
+	case isAlpha(char):
 		scanner.backup()
 		return lexMethod
 	case char == '|':

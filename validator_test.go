@@ -41,7 +41,7 @@ func TestThatValidatorNewReturnsNewValidator(t *testing.T) {
 func TestThatValidatorCanRegisterAndValidateCustomFunc(t *testing.T) {
 	Default().Locale().Set("test.isNotTest", "test.isNotTest")
 
-	Register("is_test", func(ctx core.ValidatorContext, options []string) error {
+	Register("is_test", func(ctx core.ValidatorContext, args []interface{}) error {
 		if val, ok := ctx.Value().(string); ok {
 			if val == "test" {
 				return nil

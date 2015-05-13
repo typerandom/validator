@@ -34,7 +34,11 @@ func (args Arguments) String() string {
 		if result != "" {
 			result += ", "
 		}
-		result += fmt.Sprintf("'%v'", val)
+		if _, ok := val.(string); ok {
+			result += fmt.Sprintf("'%v'", val)
+		} else {
+			result += fmt.Sprintf("%v", val)
+		}
 	}
 
 	return result
