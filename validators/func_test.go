@@ -130,6 +130,34 @@ func (f *passingFuncDummy) TestSomeValue(context core.ValidatorContext, args []i
 	return nil
 }
 
+func (f *passingFuncDummy) TestSomeValueWithArgs(context core.ValidatorContext, args []interface{}) error {
+	if len(args) == 0 {
+		panic("Expected arguments. Didn't get any!")
+	}
+
+	if t, ok := args[0].(*testing.T); ok {
+		if val1, ok := args[1].(float64); ok {
+			if val1 != 141 {
+				t.Fatalf("Expected argument 1 to have value '%d', but got '%v'.", 141, val1)
+			}
+		} else {
+			t.Fatal("Expected argument 1 to be float, but got something else...")
+		}
+
+		if val2, ok := args[2].(bool); ok {
+			if val2 != true {
+				t.Fatalf("Expected argument 2 to have value '%v', but got '%v'.", true, val2)
+			}
+		} else {
+			t.Fatal("Expected argument 2 to be boolean, but got something else...")
+		}
+	} else {
+		panic("Expected test argument. Got something else!")
+	}
+
+	return nil
+}
+
 func TestThatFuncValidatorSucceedsForExistingDefaultMethod(t *testing.T) {
 	dummy := &passingFuncDummy{}
 
@@ -146,6 +174,17 @@ func TestThatFuncValidatorSucceedsForExistingExplicitMethod(t *testing.T) {
 
 	ctx := newFuncTestContext(dummy, "TestValue")
 	err := FuncValidator(ctx, []interface{}{"TestSomeValue"})
+
+	if err != nil {
+		t.Fatalf("Didn't expect error, got %s.", err)
+	}
+}
+
+func TestThatFuncValidatorSucceedsForExistingExplicitWithArgumentsMethod(t *testing.T) {
+	dummy := &passingFuncDummy{}
+
+	ctx := newFuncTestContext(dummy, "TestValue")
+	err := FuncValidator(ctx, []interface{}{"TestSomeValueWithArgs", t, float64(141), true})
 
 	if err != nil {
 		t.Fatalf("Didn't expect error, got %s.", err)
