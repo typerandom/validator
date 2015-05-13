@@ -7,21 +7,22 @@ import (
 
 func FuncValidator(context core.ValidatorContext, args []interface{}) error {
 	var funcName string
+	var funcArgs []interface{}
 
-	switch len(args) {
-	case 0:
+	if len(args) == 0 {
 		funcName = "Validate" + context.Field().Name
-	case 1:
-		if val, ok := args[0].(string); ok {
-			funcName = val
+	} else {
+		if typedArg, ok := args[0].(string); ok {
+			funcName = typedArg
+			if len(args) > 1 {
+				funcArgs = args[1:]
+			}
 		} else {
 			return context.NewError("arguments.invalidType", 1, "string")
 		}
-	default:
-		return context.NewError("arguments.singleRequired")
 	}
 
-	returnValues, err := core.CallDynamicMethod(context.Source(), funcName, context)
+	returnValues, err := core.CallDynamicMethod(context.Source(), funcName, context, funcArgs)
 
 	if err != nil {
 		if err == core.InvalidMethodError {

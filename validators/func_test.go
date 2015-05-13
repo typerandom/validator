@@ -20,20 +20,6 @@ func newFuncTestContext(source interface{}, fieldName string) core.ValidatorCont
 	return ctx
 }
 
-func TestThatFuncValidatorFailsForInvalidOptions(t *testing.T) {
-	ctx := core.NewTestContext(nil)
-
-	err := FuncValidator(ctx, []interface{}{"123", "123"})
-
-	if err == nil {
-		t.Fatalf("Expected error, didn't get any.")
-	}
-
-	if err.Error() != "arguments.singleRequired" {
-		t.Fatalf("Expected single argument required error.")
-	}
-}
-
 func TestThatFuncValidatorFailsForMissingDefaultMethod(t *testing.T) {
 	type Dummy struct {
 		TestValue string
@@ -72,18 +58,18 @@ type failingFuncDummy struct {
 	TestValue string
 }
 
-func (f *failingFuncDummy) ValidateTestValue(context core.ValidatorContext) error {
+func (f *failingFuncDummy) ValidateTestValue(context core.ValidatorContext, args []interface{}) error {
 	return errors.New("testvalue.error")
 }
 
-func (f *failingFuncDummy) TestSomeValue(context core.ValidatorContext) error {
+func (f *failingFuncDummy) TestSomeValue(context core.ValidatorContext, args []interface{}) error {
 	return errors.New("testvalue.error")
 }
 
-func (f *failingFuncDummy) TestInvalidInputParams(context core.ValidatorContext) {
+func (f *failingFuncDummy) TestInvalidInputParams(context core.ValidatorContext, args []interface{}) {
 }
 
-func (f *failingFuncDummy) TestInvalidOutputParams(context core.ValidatorContext) (*string, error) {
+func (f *failingFuncDummy) TestInvalidOutputParams(context core.ValidatorContext, args []interface{}) (*string, error) {
 	return nil, nil
 }
 
@@ -136,11 +122,11 @@ type passingFuncDummy struct {
 	TestValue string
 }
 
-func (f *passingFuncDummy) ValidateTestValue(context core.ValidatorContext) error {
+func (f *passingFuncDummy) ValidateTestValue(context core.ValidatorContext, args []interface{}) error {
 	return nil
 }
 
-func (f *passingFuncDummy) TestSomeValue(context core.ValidatorContext) error {
+func (f *passingFuncDummy) TestSomeValue(context core.ValidatorContext, args []interface{}) error {
 	return nil
 }
 
