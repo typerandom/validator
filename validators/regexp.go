@@ -6,6 +6,10 @@ import (
 	"regexp"
 )
 
+var (
+	regexpCache map[string]*regexp.Regexp = map[string]*regexp.Regexp{}
+)
+
 func RegexpValidator(context core.ValidatorContext, args []interface{}) error {
 	if len(args) != 1 {
 		return context.NewError("arguments.singleRequired")
@@ -17,13 +21,22 @@ func RegexpValidator(context core.ValidatorContext, args []interface{}) error {
 				return context.NewError("regexp.mustMatchPattern", pattern)
 			}
 
-			matched, err := regexp.MatchString(pattern, testValue)
+			var expr *regexp.Regexp
 
-			if err != nil {
-				return errors.New("Unexpected regexp error for validator field '{field}': " + err.Error())
+			if cachedExpr, ok := regexpCache[pattern]; ok {
+				expr = cachedExpr
+			} else {
+				newExpr, err := regexp.Compile(pattern)
+
+				if err != nil {
+					return errors.New("Unexpected regexp error for validator field '{field}': " + err.Error())
+				}
+
+				expr = newExpr
+				regexpCache[pattern] = newExpr
 			}
 
-			if !matched {
+			if !expr.MatchString(testValue) {
 				return context.NewError("regexp.mustMatchPattern", pattern)
 			}
 

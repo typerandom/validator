@@ -6,6 +6,12 @@ import (
 	"strings"
 )
 
+type Error struct {
+	field     *ReflectedField
+	validator *parser.Method
+	src       error
+}
+
 func NewError(field *ReflectedField, validator *parser.Method, err error) *Error {
 	return &Error{
 		field:     field,
@@ -18,12 +24,6 @@ func NewPlainError(err error) *Error {
 	return &Error{
 		src: err,
 	}
-}
-
-type Error struct {
-	field     *ReflectedField
-	validator *parser.Method
-	src       error
 }
 
 func (this Error) IsFieldError() bool {

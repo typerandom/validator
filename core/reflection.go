@@ -89,7 +89,7 @@ func GetStructFields(value interface{}, tagName string) ([]*ReflectedField, erro
 
 var (
 	InvalidMethodError          = errors.New("Method does not exist.")
-	InputParameterMismatchError = errors.New("Arguments does not match those of target function.")
+	InputParameterMismatchError = errors.New("Parameters does not match those of target function.")
 	UnhandledCallError          = errors.New("Unhandled function call error.")
 )
 
