@@ -15,7 +15,7 @@ func testThatValueIsNormalizedToType(t *testing.T, value interface{}, expectedVa
 
 	normalizedValueKind := reflect.TypeOf(normalized.Value).Kind()
 
-	if normalizedValueKind.String() == expectedNormalizedKind.String() {
+	if normalizedValueKind == expectedNormalizedKind {
 		if expectNil {
 			if !normalized.IsNil {
 				t.Fatal("Expected value to be nil, but it wasn't.")
@@ -24,7 +24,7 @@ func testThatValueIsNormalizedToType(t *testing.T, value interface{}, expectedVa
 			if normalized.IsNil {
 				t.Fatal("Exepected value to not be nil, but it was")
 			}
-			if normalized.Value != expectedValue {
+			if !reflect.DeepEqual(normalized.Value, expectedValue) {
 				t.Fatalf("Expected '%v' but got '%v'.", expectedValue, normalized.Value)
 			}
 		}
@@ -72,8 +72,8 @@ func TestThatInt32IsNormalizedToInt64(t *testing.T) {
 func TestThatInt64IsNormalizedToInt64(t *testing.T) {
 	var value int64 = 123
 	var nilValue *int64
-	testThatValueIsNormalizedToType(t, value, int64(123), reflect.Int64, reflect.Int64, false)
-	testThatValueIsNormalizedToType(t, &value, int64(123), reflect.Int64, reflect.Int64, false)
+	testThatValueIsNormalizedToType(t, value, value, reflect.Int64, reflect.Int64, false)
+	testThatValueIsNormalizedToType(t, &value, value, reflect.Int64, reflect.Int64, false)
 	testThatValueIsNormalizedToType(t, nilValue, nilValue, reflect.Int64, reflect.Int64, true)
 }
 
@@ -128,23 +128,39 @@ func TestThatFloat32IsNormalizedToFloat64(t *testing.T) {
 func TestThatFloat64IsNormalizedToFloat64(t *testing.T) {
 	var value float64 = 123
 	var nilValue *float64
-	testThatValueIsNormalizedToType(t, value, float64(123), reflect.Float64, reflect.Float64, false)
-	testThatValueIsNormalizedToType(t, &value, float64(123), reflect.Float64, reflect.Float64, false)
+	testThatValueIsNormalizedToType(t, value, value, reflect.Float64, reflect.Float64, false)
+	testThatValueIsNormalizedToType(t, &value, value, reflect.Float64, reflect.Float64, false)
 	testThatValueIsNormalizedToType(t, nilValue, nilValue, reflect.Float64, reflect.Float64, true)
 }
 
 func TestThatStringIsNormalizedToString(t *testing.T) {
 	var value string = "abc"
 	var nilValue *string
-	testThatValueIsNormalizedToType(t, value, "abc", reflect.String, reflect.String, false)
-	testThatValueIsNormalizedToType(t, &value, "abc", reflect.String, reflect.String, false)
+	testThatValueIsNormalizedToType(t, value, value, reflect.String, reflect.String, false)
+	testThatValueIsNormalizedToType(t, &value, value, reflect.String, reflect.String, false)
 	testThatValueIsNormalizedToType(t, nilValue, nilValue, reflect.String, reflect.String, true)
 }
 
 func TestThatBooleanIsNormalizedToBoolean(t *testing.T) {
 	var value bool = true
 	var nilValue *bool
-	testThatValueIsNormalizedToType(t, value, true, reflect.Bool, reflect.Bool, false)
-	testThatValueIsNormalizedToType(t, &value, true, reflect.Bool, reflect.Bool, false)
+	testThatValueIsNormalizedToType(t, value, value, reflect.Bool, reflect.Bool, false)
+	testThatValueIsNormalizedToType(t, &value, value, reflect.Bool, reflect.Bool, false)
 	testThatValueIsNormalizedToType(t, nilValue, nilValue, reflect.Bool, reflect.Bool, true)
+}
+
+func TestThatSliceIsNormalizedToSlice(t *testing.T) {
+	var value []string = []string{"abc", "def", "123"}
+	var nilValue *[]string
+	testThatValueIsNormalizedToType(t, value, value, reflect.Slice, reflect.Slice, false)
+	testThatValueIsNormalizedToType(t, &value, value, reflect.Slice, reflect.Slice, false)
+	testThatValueIsNormalizedToType(t, nilValue, nilValue, reflect.Slice, reflect.Slice, true)
+}
+
+func TestThatMapIsNormalizedToMap(t *testing.T) {
+	var value map[string]string = map[string]string{"abc": "def"}
+	var nilValue *map[string]string
+	testThatValueIsNormalizedToType(t, value, value, reflect.Map, reflect.Map, false)
+	testThatValueIsNormalizedToType(t, &value, value, reflect.Map, reflect.Map, false)
+	testThatValueIsNormalizedToType(t, nilValue, nilValue, reflect.Map, reflect.Map, true)
 }
