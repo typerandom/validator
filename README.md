@@ -159,11 +159,6 @@ Register a global validator by calling `validator.Register(name string, validato
 
 Use the `func` validator tag to assign a custom validator method on your structure. See `func` under the `Validators` section above for more information.
 
-## Todo
-
-* Nil validator
-* Support for OR-based rules instead of context.StopValidate (i.e. `nil|numeric`)
-
 # License
 
 MIT
