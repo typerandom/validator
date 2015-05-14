@@ -1,22 +1,34 @@
 # Validator [![GoDoc](https://godoc.org/github.com/typerandom/validator?status.png)](http://godoc.org/github.com/typerandom/validator) [![Build Status](https://travis-ci.org/typerandom/validator.svg?branch=master)](https://travis-ci.org/typerandom/validator)
 
-A simple, yet powerful validation library for Go.
+A powerful validation library for Go.
 
 **WARNING: This library is WIP and is at it's current state not suitable for production. If you use this library, you may be subject to breaking API changes.**
 
 ## Features
 
-* Tag structure fields with parameterizable validation rules.
-* Validate deeply nested structures.
-* Add custom validators.
-* Load locale from JSON file.
+* Tag syntax that allows for typed parameters and multiple validation sets.
+* Validation of deeply nested structures.
+* Custom validators.
+* Localized error messages.
 
-## Getting Started
+## Install
 
-1. Import `github.com/typerandom/validator` into to your Go project.
-2. Add validation tags to the structure that you want to validate. See section `Tagging` below.
-3. Call `errors := validator.Validate(onYourObjectThatYouHaveGivenValidatorTags)`.
-4. Check if the return value (errors) are empty (using `errors.Any()`). If they are, then validation passed, if not, then show the errors to the user.
+Just use go get.
+
+    go get gopkg.in/typerandom/validator.v0
+    
+And then just import the package into your own code.
+
+    import (
+        "gopkg.in/typerandom/validator.v0"
+    )
+
+## Getting started
+
+1. Add validation tags to the structure that you want to validate. See section `Tagging` below.
+2. Call `errors := validator.Validate(yourObjectThatYouHaveGivenValidatorTags)`.
+3. Call èrrors.Any()` to check if there are any errors.
+4. If there are errors, handle them. Or use `errors.PrintAll()` if you're debugging.
 
 ## Example
 
@@ -31,7 +43,7 @@ A simple, yet powerful validation library for Go.
 	type Person struct {
 		FirstName string `validate:"min(5),max(16)"`
 		LastName  string `validate:"min(5),max(20)"`
-		Email     string `validate:"regexp(^[a-z0-9-]*@[a-z0-9.]*\\\\.com$)"`
+		Email     string `validate:"regexp(´^[a-z0-9-]*@[a-z0-9.]*\\.com$´)"`
 		Age       int    `validate:"min(18),max(65)"`
 	}
 
