@@ -95,7 +95,7 @@ func TestThatValidatorCannotWalkString(t *testing.T) {
 }
 
 func TestThatValidatorCannotWalkInt(t *testing.T) {
-	testThatValidatorCannotWalkValue(t, 123, "int64")
+	testThatValidatorCannotWalkValue(t, int64(123), "int64")
 }
 
 func TestThatValidatorCannotWalkFloat(t *testing.T) {

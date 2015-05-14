@@ -1,7 +1,8 @@
-package parser
+package parser_test
 
 import (
 	"fmt"
+	. "github.com/typerandom/validator/core/parser"
 	"testing"
 )
 

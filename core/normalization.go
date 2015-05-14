@@ -75,15 +75,13 @@ func normalizeInternal(value interface{}, isNil bool) (*NormalizedValue, error) 
 	// Normalize all numeric types to their 64-bit counterparts (i.e. int8 -> int64, float32 -> float64)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32:
 		var err error
-		var valueKind reflect.Kind
 		var normalizedValue interface{}
 
-		if normalizedValue, valueKind, err = normalizeNumeric(value); err != nil {
+		if normalizedValue, _, err = normalizeNumeric(value); err != nil {
 			return nil, err
 		}
 
 		value = normalizedValue
-		kind = valueKind
 	}
 
 	normalized := &NormalizedValue{
