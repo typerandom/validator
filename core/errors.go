@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func NewValidatorError(field *ReflectedField, tag *parser.Method, err error) *Error {
+func NewError(field *ReflectedField, tag *parser.Method, err error) *Error {
 	return &Error{
 		Field:  field,
 		Tag:    tag,
@@ -30,34 +30,28 @@ func (this *Error) Error() string {
 	return message
 }
 
-type Errors struct {
-	Items []error
+type ErrorList []error
+
+func (this *ErrorList) Add(err error) {
+	*this = append(*this, err)
 }
 
-func NewErrors() *Errors {
-	return &Errors{}
-}
-
-func (this *Errors) Add(err error) {
-	this.Items = append(this.Items, err)
-}
-
-func (this *Errors) AddMany(errs *Errors) {
-	for _, err := range errs.Items {
-		this.Items = append(this.Items, err)
+func (this *ErrorList) AddMany(errs ErrorList) {
+	for _, err := range errs {
+		this.Add(err)
 	}
 }
 
-func (this *Errors) First() error {
-	return this.Items[0]
+func (this ErrorList) First() error {
+	return this[0]
 }
 
-func (this *Errors) Any() bool {
-	return len(this.Items) > 0
+func (this ErrorList) Any() bool {
+	return len(this) > 0
 }
 
-func (this *Errors) PrintAll() {
-	for _, err := range this.Items {
+func (this ErrorList) PrintAll() {
+	for _, err := range this {
 		fmt.Println(err)
 	}
 }

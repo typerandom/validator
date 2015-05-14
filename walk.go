@@ -51,7 +51,7 @@ func walkValidateStruct(context *context, normalized *core.NormalizedValue, pare
 		normalizedFieldValue, err := core.Normalize(fieldValue)
 
 		if err != nil {
-			context.errors.Add(core.NewValidatorError(field, nil, err))
+			context.errors.Add(core.NewError(field, nil, err))
 			continue
 		}
 
@@ -61,10 +61,10 @@ func walkValidateStruct(context *context, normalized *core.NormalizedValue, pare
 		context.setSource(normalized.Value)
 		context.setValue(normalizedFieldValue)
 
-		var mostRecentErrors *core.Errors
+		var mostRecentErrors core.ErrorList
 
 		for _, methods := range field.MethodGroups {
-			var errors *core.Errors
+			var errors core.ErrorList
 
 			for _, method := range methods {
 				validate, err := context.validator.registry.Get(method.Name)
@@ -75,21 +75,18 @@ func walkValidateStruct(context *context, normalized *core.NormalizedValue, pare
 				}
 
 				if err = validate(context, method.Arguments); err != nil {
-					if errors == nil {
-						errors = core.NewErrors()
-					}
-					errors.Add(core.NewValidatorError(field, method, err))
+					errors.Add(core.NewError(field, method, err))
 				}
 			}
 
 			mostRecentErrors = errors
 
-			if errors == nil {
+			if !errors.Any() {
 				break
 			}
 		}
 
-		if mostRecentErrors != nil {
+		if mostRecentErrors.Any() {
 			context.errors.AddMany(mostRecentErrors)
 		}
 

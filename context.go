@@ -15,7 +15,7 @@ type context struct {
 	field        *core.ReflectedField
 	isNil        bool
 
-	errors *core.Errors
+	errors core.ErrorList
 	source interface{}
 }
 

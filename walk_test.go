@@ -9,11 +9,11 @@ import (
 func testThatValidatorCanWalkItems(t *testing.T, items interface{}, numItems int) {
 	errs := Validate(items)
 
-	if len(errs.Items) != numItems {
-		t.Fatalf("Expected %d errors, got %d.", numItems, len(errs.Items))
+	if len(errs) != numItems {
+		t.Fatalf("Expected %d errors, got %d.", numItems, len(errs))
 	}
 
-	for _, err := range errs.Items {
+	for _, err := range errs {
 		if err.Error() != "Value cannot be empty." {
 			t.Fatalf("Expected validation error, got %s.", err)
 		}
@@ -53,8 +53,8 @@ func TestThatValidatorCanWalkStruct(t *testing.T) {
 
 	totalFields := reflect.TypeOf(dummy).NumField()
 
-	if len(errs.Items) != totalFields {
-		t.Fatalf("Expected %d errors, got %d.", totalFields, len(errs.Items))
+	if len(errs) != totalFields {
+		t.Fatalf("Expected %d errors, got %d.", totalFields, len(errs))
 	}
 
 	expectedErrors := []string{
@@ -66,8 +66,8 @@ func TestThatValidatorCanWalkStruct(t *testing.T) {
 	}
 
 	for i, err := range expectedErrors {
-		if errs.Items[i].Error() != err {
-			t.Fatalf("Expected error '%s', but got '%s'.", err, errs.Items[i].Error())
+		if errs[i].Error() != err {
+			t.Fatalf("Expected error '%s', but got '%s'.", err, errs[i].Error())
 		}
 	}
 }
@@ -79,8 +79,8 @@ func testThatValidatorCannotWalkValue(t *testing.T, dummy interface{}, typeName 
 		t.Fatalf("Expected error, but didn't get any.")
 	}
 
-	if len(errs.Items) != 1 {
-		t.Fatalf("Expected 1 error, but got %d.", len(errs.Items))
+	if len(errs) != 1 {
+		t.Fatalf("Expected 1 error, but got %d.", len(errs))
 	}
 
 	expectedErr := "Unable to directly validate type '" + typeName + "'."

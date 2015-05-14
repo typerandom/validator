@@ -20,10 +20,9 @@ func (this *validator) Register(name string, validator core.ValidatorFn) {
 	this.registry.Register(name, validator)
 }
 
-func (this *validator) Validate(value interface{}) *core.Errors {
+func (this *validator) Validate(value interface{}) core.ErrorList {
 	context := &context{
 		validator: this,
-		errors:    core.NewErrors(),
 	}
 
 	walkValidate(context, value, nil)
@@ -51,6 +50,6 @@ func Register(name string, validator core.ValidatorFn) {
 	getGlobalValidator().Register(name, validator)
 }
 
-func Validate(value interface{}) *core.Errors {
+func Validate(value interface{}) core.ErrorList {
 	return getGlobalValidator().Validate(value)
 }
