@@ -39,7 +39,7 @@ func walkValidateStruct(context *context, normalized *core.NormalizedValue, pare
 	fields, err := core.GetStructFields(normalized.Value, "validate")
 
 	if err != nil {
-		context.errors.Add(err)
+		context.errors.AddPlain(err)
 		return
 	}
 
@@ -70,7 +70,7 @@ func walkValidateStruct(context *context, normalized *core.NormalizedValue, pare
 				validate, err := context.validator.registry.Get(method.Name)
 
 				if err != nil {
-					context.errors.Add(err)
+					context.errors.AddPlain(err)
 					return
 				}
 
@@ -105,7 +105,7 @@ func walkValidate(context *context, value interface{}, parentField *core.Reflect
 		var err error
 		normalized, err = core.Normalize(value)
 		if err != nil {
-			context.errors.Add(err)
+			context.errors.AddPlain(err)
 		}
 	}
 
@@ -117,6 +117,6 @@ func walkValidate(context *context, value interface{}, parentField *core.Reflect
 	case reflect.Struct:
 		walkValidateStruct(context, normalized, parentField)
 	default:
-		context.errors.Add(errors.New("Unable to directly validate type '" + normalized.OriginalKind.String() + "'."))
+		context.errors.AddPlain(errors.New("Unable to directly validate type '" + normalized.OriginalKind.String() + "'."))
 	}
 }

@@ -6,34 +6,73 @@ import (
 	"strings"
 )
 
-func NewError(field *ReflectedField, tag *parser.Method, err error) *Error {
+func NewError(field *ReflectedField, validator *parser.Method, err error) *Error {
 	return &Error{
-		Field:  field,
-		Tag:    tag,
-		Source: err,
+		field:     field,
+		validator: validator,
+		src:       err,
+	}
+}
+
+func NewPlainError(err error) *Error {
+	return &Error{
+		src: err,
 	}
 }
 
 type Error struct {
-	Field  *ReflectedField
-	Tag    *parser.Method
-	Source error
+	field     *ReflectedField
+	validator *parser.Method
+	src       error
+}
+
+func (this Error) IsFieldError() bool {
+	if this.field == nil && this.validator == nil {
+		return false
+	}
+	return true
+}
+
+func (this *Error) GetFieldName() string {
+	if this.field == nil {
+		return ""
+	}
+	return this.field.FullName()
+}
+
+func (this *Error) GetValidatorName() string {
+	if this.validator == nil {
+		return ""
+	}
+	return this.validator.Name
 }
 
 func (this *Error) String() string {
-	return "{ error: " + this.Error() + "}"
+	return this.Error()
 }
 
 func (this *Error) Error() string {
-	message := strings.Replace(this.Source.Error(), "{field}", this.Field.FullName(), 1)
-	message = strings.Replace(message, "{validator}", this.Tag.Name, 1)
-	return message
+	if this.IsFieldError() {
+		message := strings.Replace(this.src.Error(), "{field}", this.GetFieldName(), 1)
+		message = strings.Replace(message, "{validator}", this.GetValidatorName(), 1)
+		return message
+	} else {
+		return this.src.Error()
+	}
 }
 
-type ErrorList []error
+type ErrorList []*Error
 
-func (this *ErrorList) Add(err error) {
+func (this *ErrorList) AddPlain(err error) {
+	this.Add(NewPlainError(err))
+}
+
+func (this *ErrorList) Add(err *Error) {
 	*this = append(*this, err)
+}
+
+func (this *ErrorList) Clear() {
+	*this = ErrorList{}
 }
 
 func (this *ErrorList) AddMany(errs ErrorList) {
@@ -42,12 +81,27 @@ func (this *ErrorList) AddMany(errs ErrorList) {
 	}
 }
 
-func (this ErrorList) First() error {
-	return this[0]
+func (this ErrorList) WithField(fieldName string) ErrorList {
+	var errs ErrorList
+
+	for _, err := range this {
+		if err.IsFieldError() && err.GetFieldName() == fieldName {
+			errs.Add(err)
+		}
+	}
+
+	return errs
 }
 
 func (this ErrorList) Any() bool {
 	return len(this) > 0
+}
+
+func (this ErrorList) First() error {
+	if this.Any() {
+		return this[0]
+	}
+	return nil
 }
 
 func (this ErrorList) PrintAll() {
