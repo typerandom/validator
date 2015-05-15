@@ -68,16 +68,6 @@ Running the example above would output:
     Email must match pattern '^[a-z0-9-]*@[a-z0-9.]*\.com$'.
     Age cannot be less than 18.
 
-## Tagging
-
-In order to specify how fields should be validated, fields must be tagged with the `validate` tag. The `validate` tag should contain validation rules in the format of `validator_name(params)` and should be separated by `,` for chaining of multiple rules. I.e. `some_validator,other_validator(abc)`. Omitting `()` is the same as calling a method without parameters. I.e. `not_empty` is the same as `not_empty()`.
-
-### Examples
-
-    Value int     `validate:"not_empty,max(10)"`
-    Value string  `validate:"empty,regex(^[a-z_]*$),max(64)"`
-    Value *string `validate:"not_empty,func"`
-
 # License
 
 MIT
