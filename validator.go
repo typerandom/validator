@@ -84,12 +84,12 @@ func Default() Validator {
 	return getGlobalValidator()
 }
 
-// Register registers a validator method by name.
+// Register registers a validator method by name on the default validator.
 func Register(name string, validator core.ValidatorFn) {
 	getGlobalValidator().Register(name, validator)
 }
 
-// Validate validates fields of a structure, or structures of a map, slice or array.
+// Validate validates fields of a structure, or structures of a map, slice or array using the default validator.
 func Validate(value interface{}) core.ErrorList {
 	return getGlobalValidator().Validate(value)
 }
