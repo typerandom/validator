@@ -17,9 +17,10 @@ Just use go get.
     
 And then just import the package into your own code.
 
-    import (
-        "gopkg.in/typerandom/validator.v0"
-    )
+```go
+import (
+    "gopkg.in/typerandom/validator.v0"
+)```
 
 ## Getting started
 
@@ -30,35 +31,36 @@ And then just import the package into your own code.
 
 ## Example
 
-### example.go
 
-	package main
+```go
+package main
 
-	import (
-		"gopkg.in/typerandom/validator.v0"
-	)
+import (
+	"gopkg.in/typerandom/validator.v0"
+)
 
-	type User struct {
-		Name  string `validate:"min(5),max(16)"`
-		Email string `validate:"regexp(´^[a-z0-9-]*@[a-z0-9.]*\\.com$´)"`
-		Age   int    `validate:"min(18),max(65)"`
+type User struct {
+	Name  string `validate:"min(5),max(16)"`
+	Email string `validate:"regexp(´^[a-z0-9-]*@[a-z0-9.]*\\.com$´)"`
+	Age   int    `validate:"min(18),max(65)"`
+}
+
+func main() {
+	user := &User{
+		Name:  "Bob",
+		Email: "bobby@tables",
+		Age:   17,
 	}
 
-	func main() {
-		user := &User{
-			Name:  "Bob",
-			Email: "bobby@tables",
-			Age:   17,
-		}
-
-		if errs := validator.Validate(user); errs.Any() {
-			errs.PrintAll()
-			return
-		}
-
-		print("Hey " + user.Name + "!")
+	if errs := validator.Validate(user); errs.Any() {
+		errs.PrintAll()
+		return
 	}
-	
+
+	print("Hey " + user.Name + "!")
+}
+```
+
 Running the example above would output:
 
     Name cannot be shorter than 5 characters.
