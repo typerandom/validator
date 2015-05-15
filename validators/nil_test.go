@@ -2,7 +2,7 @@ package validators_test
 
 import (
 	"errors"
-	"github.com/typerandom/validator/core"
+	. "github.com/typerandom/validator/testing"
 	. "github.com/typerandom/validator/validators"
 	"testing"
 )
@@ -10,7 +10,7 @@ import (
 func TestThatNilValidatorFailsForInvalidOptions(t *testing.T) {
 	var dummy *string
 
-	ctx := core.NewTestContext(dummy)
+	ctx := NewTestContext(dummy)
 	opts := []interface{}{"123"}
 
 	err := NilValidator(ctx, opts)
@@ -27,7 +27,7 @@ func TestThatNilValidatorFailsForInvalidOptions(t *testing.T) {
 func TestThatNilValidatorSucceedsForNilValue(t *testing.T) {
 	var dummy *string
 
-	ctx := core.NewTestContext(dummy)
+	ctx := NewTestContext(dummy)
 	opts := []interface{}{}
 
 	if err := NilValidator(ctx, opts); err != nil {
@@ -38,7 +38,7 @@ func TestThatNilValidatorSucceedsForNilValue(t *testing.T) {
 func TestThatNilValidatorFailsForNonNilValue(t *testing.T) {
 	dummy := ""
 
-	ctx := core.NewTestContext(&dummy)
+	ctx := NewTestContext(&dummy)
 	opts := []interface{}{}
 
 	err := NilValidator(ctx, opts)
@@ -55,7 +55,7 @@ func TestThatNilValidatorFailsForNonNilValue(t *testing.T) {
 func TestThatNilValidatorFailsForNonPointerValue(t *testing.T) {
 	dummy := ""
 
-	ctx := core.NewTestContext(dummy)
+	ctx := NewTestContext(dummy)
 	opts := []interface{}{}
 
 	err := NilValidator(ctx, opts)

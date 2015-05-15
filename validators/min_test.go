@@ -2,7 +2,7 @@ package validators_test
 
 import (
 	"errors"
-	"github.com/typerandom/validator/core"
+	. "github.com/typerandom/validator/testing"
 	. "github.com/typerandom/validator/validators"
 	"testing"
 )
@@ -10,7 +10,7 @@ import (
 func TestThatMinValidatorFailsForInvalidOptions(t *testing.T) {
 	dummy := 100
 
-	ctx := core.NewTestContext(dummy)
+	ctx := NewTestContext(dummy)
 	err := MinValidator(ctx, []interface{}{})
 
 	if err == nil {
@@ -43,7 +43,7 @@ func TestThatMinValidatorFailsForInvalidOptions(t *testing.T) {
 }
 
 func testThatMinValidatorSucceedsForValueOverLimit(t *testing.T, limit float64, dummy interface{}) {
-	ctx := core.NewTestContext(dummy)
+	ctx := NewTestContext(dummy)
 	opts := []interface{}{limit}
 
 	if err := MinValidator(ctx, opts); err != nil {
@@ -52,7 +52,7 @@ func testThatMinValidatorSucceedsForValueOverLimit(t *testing.T, limit float64, 
 }
 
 func testThatMinValidatorSucceedsForValueOnLimit(t *testing.T, limit float64, dummy interface{}) {
-	ctx := core.NewTestContext(dummy)
+	ctx := NewTestContext(dummy)
 	opts := []interface{}{limit}
 
 	if err := MinValidator(ctx, opts); err != nil {
@@ -61,7 +61,7 @@ func testThatMinValidatorSucceedsForValueOnLimit(t *testing.T, limit float64, du
 }
 
 func testThatMinValidatorFailsForValueUnderLimit(t *testing.T, limit float64, dummy interface{}, expectedErr string) {
-	ctx := core.NewTestContext(dummy)
+	ctx := NewTestContext(dummy)
 	opts := []interface{}{limit}
 
 	err := MinValidator(ctx, opts)

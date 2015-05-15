@@ -12,7 +12,7 @@ type ReflectedField struct {
 	Index        int
 	Parent       *ReflectedField
 	Name         string
-	DisplayName  string
+	DisplayName  *string
 	MethodGroups []parser.Methods
 }
 
@@ -50,7 +50,10 @@ func (this *ReflectedField) FullName(postfix ...string) string {
 
 func (this *ReflectedField) FullDisplayName(postfix ...string) string {
 	return getFullName(this, func(field *ReflectedField) string {
-		return field.DisplayName
+		if field.DisplayName != nil {
+			return *field.DisplayName
+		}
+		return field.Name
 	}, postfix...)
 }
 
@@ -66,7 +69,7 @@ func reflectValue(value interface{}) reflect.Type {
 
 var structFieldCache map[reflect.Type][]*ReflectedField = map[reflect.Type][]*ReflectedField{}
 
-func GetStructFields(value interface{}, tagName string, displayNameTag string) ([]*ReflectedField, error) {
+func GetStructFields(value interface{}, tagName string, displayNameTag *string) ([]*ReflectedField, error) {
 	var fields []*ReflectedField
 
 	reflectedType := reflectValue(value)
@@ -85,11 +88,11 @@ func GetStructFields(value interface{}, tagName string, displayNameTag string) (
 				return nil, err
 			}
 
-			displayName := field.Name
+			var displayName *string
 
-			if len(displayNameTag) > 0 {
-				if tmpDisplayName := field.Tag.Get(displayNameTag); len(tmpDisplayName) > 0 {
-					displayName = tmpDisplayName
+			if displayNameTag != nil {
+				if tmpDisplayName := field.Tag.Get(*displayNameTag); len(tmpDisplayName) > 0 {
+					displayName = &tmpDisplayName
 				}
 			}
 

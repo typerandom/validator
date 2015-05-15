@@ -3,12 +3,13 @@ package validators_test
 import (
 	"errors"
 	"github.com/typerandom/validator/core"
+	. "github.com/typerandom/validator/testing"
 	. "github.com/typerandom/validator/validators"
 	"testing"
 )
 
 func newFuncTestContext(source interface{}, fieldName string) core.ValidatorContext {
-	ctx := core.NewTestContext(nil)
+	ctx := NewTestContext(nil)
 
 	ctx.SetSource(source)
 

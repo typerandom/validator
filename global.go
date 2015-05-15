@@ -6,15 +6,15 @@ import (
 
 var globalLock sync.Mutex
 var globalInitialized bool
-var globalDefaultValidator *Validator
+var globalDefaultValidator *validator
 
-func getGlobalValidator() *Validator {
+func getGlobalValidator() *validator {
 	if !globalInitialized {
 		globalLock.Lock()
 		defer globalLock.Unlock()
 		if !globalInitialized {
 			globalInitialized = true
-			globalDefaultValidator = New()
+			globalDefaultValidator = newValidator()
 		}
 	}
 	return globalDefaultValidator

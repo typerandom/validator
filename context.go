@@ -8,7 +8,7 @@ import (
 )
 
 type context struct {
-	validator *Validator
+	validator *validator
 
 	value        interface{}
 	originalKind reflect.Kind

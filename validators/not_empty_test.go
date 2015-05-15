@@ -2,7 +2,7 @@ package validators_test
 
 import (
 	"errors"
-	"github.com/typerandom/validator/core"
+	. "github.com/typerandom/validator/testing"
 	. "github.com/typerandom/validator/validators"
 	"testing"
 )
@@ -10,7 +10,7 @@ import (
 func TestThatNotEmptyValidatorSucceedsForInvalidOptions(t *testing.T) {
 	var dummy *string
 
-	ctx := core.NewTestContext(dummy)
+	ctx := NewTestContext(dummy)
 	opts := []interface{}{"123"}
 
 	err := EmptyValidator(ctx, opts)
@@ -25,7 +25,7 @@ func TestThatNotEmptyValidatorSucceedsForInvalidOptions(t *testing.T) {
 }
 
 func testThatNotEmptyValidatorFailsForEmptyValue(t *testing.T, dummy interface{}) {
-	ctx := core.NewTestContext(dummy)
+	ctx := NewTestContext(dummy)
 	opts := []interface{}{}
 
 	if err := EmptyValidator(ctx, opts); err != nil {
@@ -34,7 +34,7 @@ func testThatNotEmptyValidatorFailsForEmptyValue(t *testing.T, dummy interface{}
 }
 
 func testThatNotEmptyValidatorSucceedsNonEmptyValue(t *testing.T, dummy interface{}) {
-	ctx := core.NewTestContext(&dummy)
+	ctx := NewTestContext(&dummy)
 	err := EmptyValidator(ctx, []interface{}{})
 
 	if err == nil {
@@ -115,7 +115,7 @@ func TestThatNotEmptyValidatorSucceedsForNonEmptyMapValue(t *testing.T) {
 func TestThatNotEmptyValidatorSucceedsForUnhandledType(t *testing.T) {
 	type Dummy struct{}
 
-	ctx := core.NewTestContext(&Dummy{})
+	ctx := NewTestContext(&Dummy{})
 	err := EmptyValidator(ctx, []interface{}{})
 
 	if err.Error() != "empty.isNotEmpty" {
