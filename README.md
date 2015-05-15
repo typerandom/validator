@@ -70,7 +70,7 @@ Running the example above would output:
 
 ## Tagging
 
-In order to specify how fields should be validated, fields must be tagged with the `validate` tag. The `validate` tag should contain validation rules in the format of `validator_name(params)` and should be separated by `,` for chaining of multiple rules. I.e. `some_validator,other_validator(abc)`.
+In order to specify how fields should be validated, fields must be tagged with the `validate` tag. The `validate` tag should contain validation rules in the format of `validator_name(params)` and should be separated by `,` for chaining of multiple rules. I.e. `some_validator,other_validator(abc)`. Omitting `()` is the same as calling a method without parameters. I.e. `not_empty` is the same as `not_empty()`.
 
 ### Examples
 
