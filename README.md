@@ -17,10 +17,9 @@ Just use go get.
     
 And then just import the package into your own code.
 
-```go
-import (
-    "gopkg.in/typerandom/validator.v0"
-)```
+    import (
+        "gopkg.in/typerandom/validator.v0"
+    )
 
 ## Getting started
 
