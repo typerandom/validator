@@ -23,7 +23,7 @@ And then just import the package into your own code.
 
 ## Getting started
 
-1. Add validation tags to the structure that you want to validate. See [Tagging](https://github.com/typerandom/validator/wiki/Tagging) for more details.
+1. Add `validate` tags to the structure that you want to validate. See [Tagging](https://github.com/typerandom/validator/wiki/Tagging) for more details.
 2. Call `errors := validator.Validate(objectThatYouHaveGivenValidatorTags)`.
 3. Call `errors.Any()` to check if there are any errors.
 4. If there are errors, handle them. Or use `errors.PrintAll()` if you're debugging.
@@ -38,33 +38,30 @@ And then just import the package into your own code.
 		"github.com/typerandom/validator"
 	)
 
-	type Person struct {
-		FirstName string `validate:"min(5),max(16)"`
-		LastName  string `validate:"min(5),max(20)"`
-		Email     string `validate:"regexp(´^[a-z0-9-]*@[a-z0-9.]*\\.com$´)"`
-		Age       int    `validate:"min(18),max(65)"`
+	type User struct {
+		Name  string `validate:"min(5),max(16)"`
+		Email string `validate:"regexp(´^[a-z0-9-]*@[a-z0-9.]*\\.com$´)"`
+		Age   int    `validate:"min(18),max(65)"`
 	}
 
 	func main() {
-		person := &Person{
-			FirstName: "Bob",
-			LastName:  "Tab",
-			Email:     "bobby@tables",
-			Age:       17,
+		user := &User{
+			Name:  "Bob",
+			Email: "bobby@tables",
+			Age:   17,
 		}
 
-		if errors := validator.Validate(person); errors.Any() {
-			errors.PrintAll()
+		if errs := validator.Validate(user); errs.Any() {
+			errs.PrintAll()
 			return
 		}
 
-		print("Hey " + person.FirstName + "!")
+		print("Hey " + user.Name + "!")
 	}
 	
 Running the example above would output:
 
-    FirstName cannot be shorter than 5 characters.
-    LastName cannot be shorter than 5 characters.
+    Name cannot be shorter than 5 characters.
     Email must match pattern '^[a-z0-9-]*@[a-z0-9.]*\.com$'.
     Age cannot be less than 18.
 
