@@ -68,6 +68,6 @@ Running the example above would output:
     Email must match pattern '^[a-z0-9-]*@[a-z0-9.]*\.com$'.
     Age cannot be less than 18.
 
-# Licensing
+## Licensing
 
 Validator is licensed under the MIT license. See LICENSE for the full license text.
