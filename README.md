@@ -23,9 +23,9 @@ And then just import the package into your own code.
 
 ## Getting started
 
-1. Add validation tags to the structure that you want to validate. See section `Tagging` below.
-2. Call `errors := validator.Validate(yourObjectThatYouHaveGivenValidatorTags)`.
-3. Call èrrors.Any()` to check if there are any errors.
+1. Add validation tags to the structure that you want to validate. See [Tagging](https://github.com/typerandom/validator/wiki/Tagging) for more details.
+2. Call `errors := validator.Validate(objectThatYouHaveGivenValidatorTags)`.
+3. Call `errors.Any()` to check if there are any errors.
 4. If there are errors, handle them. Or use `errors.PrintAll()` if you're debugging.
 
 ## Example
@@ -69,5 +69,24 @@ Running the example above would output:
     Age cannot be less than 18.
 
 # License
+    The MIT License (MIT)
 
-MIT
+    Copyright (c) 2015 Robin Orheden
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
