@@ -27,10 +27,7 @@ func NewPlainError(err error) *Error {
 }
 
 func (this Error) IsFieldError() bool {
-	if this.field == nil && this.validator == nil {
-		return false
-	}
-	return true
+	return this.field != nil && this.validator != nil
 }
 
 func (this *Error) GetFieldName() string {

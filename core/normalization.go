@@ -82,6 +82,11 @@ func normalizeInternal(value interface{}, isNil bool) (*NormalizedValue, error) 
 		}
 
 		value = normalizedValue
+
+	case reflect.Invalid:
+		if value == nil {
+			isNil = true
+		}
 	}
 
 	normalized := &NormalizedValue{

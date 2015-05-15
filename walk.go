@@ -51,7 +51,7 @@ func walkValidateStruct(context *context, normalized *core.NormalizedValue, pare
 		normalizedFieldValue, err := core.Normalize(fieldValue)
 
 		if err != nil {
-			context.errors.Add(core.NewError(field, nil, err))
+			context.errors.AddPlain(err)
 			continue
 		}
 
