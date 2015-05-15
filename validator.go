@@ -79,7 +79,8 @@ func New() Validator {
 }
 
 // Default retrieves the default global validator.
-// This is what is used when you call the global Validate or Register method.
+// It is a singleton method that always returns the same instance.
+// This is the validator that is used when you call the global Validate() or Register() method.
 func Default() Validator {
 	return getGlobalValidator()
 }
