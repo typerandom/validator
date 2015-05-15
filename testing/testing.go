@@ -16,13 +16,6 @@ type testContext struct {
 	field *core.ReflectedField
 }
 
-func IsSyntaxValid(value interface{}) error {
-	if _, err := core.GetStructFields(value, "validator", ""); err != nil {
-		return err
-	}
-	return nil
-}
-
 func NewTestContext(value interface{}) *testContext {
 	ctx := &testContext{}
 
