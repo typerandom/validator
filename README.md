@@ -35,7 +35,7 @@ And then just import the package into your own code.
 	package main
 
 	import (
-		"github.com/typerandom/validator"
+        	"gopkg.in/typerandom/validator.v0"
 	)
 
 	type User struct {
