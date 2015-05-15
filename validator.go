@@ -7,6 +7,10 @@ import (
 )
 
 type validator struct {
+	// The tag that is used for the field's display name.
+	// Default: Empty string that defaults to the field name.
+	DisplayNameTag string
+
 	registry core.ValidatorRegistry
 	locale   *core.Locale
 	lock     sync.Mutex

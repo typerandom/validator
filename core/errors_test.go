@@ -7,7 +7,7 @@ import (
 )
 
 func TestThatFieldErrorStringFormatIsValid(t *testing.T) {
-	field := &ReflectedField{Name: "myField"}
+	field := &ReflectedField{Name: "myField", DisplayName: "myField"}
 	validator := &parser.Method{Name: "myValidator"}
 
 	err := NewError(field, validator, errors.New("Error: {field} on {validator}."))
@@ -131,10 +131,12 @@ func TestThatWhenFilledErrorListIsClearedThereAreNoErrorsLeft(t *testing.T) {
 func TestThatErrorListForFieldOnlyReturnsTheSpecifiedField(t *testing.T) {
 	var errs ErrorList
 
+	parentField := &ReflectedField{Name: "User", DisplayName: "User"}
+
 	errs.Add(NewPlainError(errors.New("Ooops.")))
 
 	userFieldFirstNameError := NewError(
-		&ReflectedField{Name: "User.FirstName"},
+		&ReflectedField{Parent: parentField, Name: "FirstName", DisplayName: "FirstName"},
 		&parser.Method{Name: "not_empty"},
 		errors.New("'{field}' cannot be empty."),
 	)
@@ -142,7 +144,7 @@ func TestThatErrorListForFieldOnlyReturnsTheSpecifiedField(t *testing.T) {
 	errs.Add(userFieldFirstNameError)
 
 	userFieldLastNameError := NewError(
-		&ReflectedField{Name: "User.LastName"},
+		&ReflectedField{Parent: parentField, Name: "LastName", DisplayName: "LastName"},
 		&parser.Method{Name: "not_empty"},
 		errors.New("'{field}' cannot be empty."),
 	)

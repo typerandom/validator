@@ -8,12 +8,15 @@ import (
 func TestThatSpecificStructFieldsCanBeReflected(t *testing.T) {
 	type Foo struct {
 		ValueA string `test:"abc"`
-		ValueB int    `test:"def"`
+		ValueB int    `test:"def" name:"custom_value"`
 	}
 
-	value := &Foo{}
+	value := &Foo{
+		ValueA: "abc",
+		ValueB: 123,
+	}
 
-	fields, err := GetStructFields(value, "test")
+	fields, err := GetStructFields(value, "test", "name")
 
 	if err != nil {
 		t.Fatalf("Didn't expect an error, but got '%s'.", err)
@@ -27,6 +30,10 @@ func TestThatSpecificStructFieldsCanBeReflected(t *testing.T) {
 
 	if firstField.Index != 0 {
 		t.Fatalf("Expected index of first field to be '0', but got '%d'.", firstField.Index)
+	}
+
+	if firstField.DisplayName != "ValueA" {
+		t.Fatalf("Expected display name of first field to be 'custom_value', but got '%s'.", firstField.DisplayName)
 	}
 
 	if firstField.FullName() != "ValueA" {
@@ -51,7 +58,11 @@ func TestThatSpecificStructFieldsCanBeReflected(t *testing.T) {
 	secondField := fields[1]
 
 	if secondField.Index != 1 {
-		t.Fatalf("Expected index of first field to be '0', but got '%d'.", secondField.Index)
+		t.Fatalf("Expected index of first field to be '1', but got '%d'.", secondField.Index)
+	}
+
+	if secondField.DisplayName != "custom_value" {
+		t.Fatalf("Expected display name of first field to be 'custom_value', but got '%s'.", secondField.DisplayName)
 	}
 
 	if secondField.FullName() != "ValueB" {

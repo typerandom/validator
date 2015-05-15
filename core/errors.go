@@ -37,6 +37,13 @@ func (this *Error) GetFieldName() string {
 	return this.field.FullName()
 }
 
+func (this *Error) GetFieldDisplayName() string {
+	if this.field == nil {
+		return ""
+	}
+	return this.field.FullDisplayName()
+}
+
 func (this *Error) GetValidatorName() string {
 	if this.validator == nil {
 		return ""
@@ -50,7 +57,7 @@ func (this *Error) String() string {
 
 func (this *Error) Error() string {
 	if this.IsFieldError() {
-		message := strings.Replace(this.src.Error(), "{field}", this.GetFieldName(), 1)
+		message := strings.Replace(this.src.Error(), "{field}", this.GetFieldDisplayName(), 1)
 		message = strings.Replace(message, "{validator}", this.GetValidatorName(), 1)
 		return message
 	} else {

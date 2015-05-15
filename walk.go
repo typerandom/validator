@@ -36,7 +36,7 @@ func walkValidateMap(context *context, normalized *core.NormalizedValue, parentF
 }
 
 func walkValidateStruct(context *context, normalized *core.NormalizedValue, parentField *core.ReflectedField) {
-	fields, err := core.GetStructFields(normalized.Value, "validate")
+	fields, err := core.GetStructFields(normalized.Value, "validate", context.validator.DisplayNameTag)
 
 	if err != nil {
 		context.errors.AddPlain(err)

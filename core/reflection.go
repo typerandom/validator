@@ -12,6 +12,7 @@ type ReflectedField struct {
 	Index        int
 	Parent       *ReflectedField
 	Name         string
+	DisplayName  string
 	MethodGroups []parser.Methods
 }
 
@@ -19,13 +20,14 @@ func (this *ReflectedField) GetValue(sourceStruct reflect.Value) interface{} {
 	return sourceStruct.Field(this.Index).Interface()
 }
 
-func (this *ReflectedField) FullName(postfix ...string) string {
-	fullName := this.Name
-	parent := this.Parent
+func getFullName(source *ReflectedField, nameResolver func(*ReflectedField) string, postfix ...string) string {
+	parent := source.Parent
+
+	fullName := nameResolver(source)
 
 	for parent != nil {
-		if len(parent.Name) > 0 {
-			fullName = parent.Name + "." + fullName
+		if len(nameResolver(parent)) > 0 {
+			fullName = nameResolver(parent) + "." + fullName
 		}
 		parent = parent.Parent
 	}
@@ -40,6 +42,18 @@ func (this *ReflectedField) FullName(postfix ...string) string {
 	return fullName
 }
 
+func (this *ReflectedField) FullName(postfix ...string) string {
+	return getFullName(this, func(field *ReflectedField) string {
+		return field.Name
+	}, postfix...)
+}
+
+func (this *ReflectedField) FullDisplayName(postfix ...string) string {
+	return getFullName(this, func(field *ReflectedField) string {
+		return field.DisplayName
+	}, postfix...)
+}
+
 func reflectValue(value interface{}) reflect.Type {
 	reflectedValueType := reflect.TypeOf(value)
 
@@ -52,7 +66,7 @@ func reflectValue(value interface{}) reflect.Type {
 
 var structFieldCache map[reflect.Type][]*ReflectedField = map[reflect.Type][]*ReflectedField{}
 
-func GetStructFields(value interface{}, tagName string) ([]*ReflectedField, error) {
+func GetStructFields(value interface{}, tagName string, displayNameTag string) ([]*ReflectedField, error) {
 	var fields []*ReflectedField
 
 	reflectedType := reflectValue(value)
@@ -65,16 +79,24 @@ func GetStructFields(value interface{}, tagName string) ([]*ReflectedField, erro
 		field := reflectedType.Field(i)
 		if unicode.IsUpper(rune(field.Name[0])) { // only grab exported fields
 			tagValue := field.Tag.Get(tagName)
-
 			methodGroups, err := parser.Parse(tagValue)
 
 			if err != nil {
 				return nil, err
 			}
 
+			displayName := field.Name
+
+			if len(displayNameTag) > 0 {
+				if tmpDisplayName := field.Tag.Get(displayNameTag); len(tmpDisplayName) > 0 {
+					displayName = tmpDisplayName
+				}
+			}
+
 			reflectedField := &ReflectedField{
 				Index:        i,
 				Name:         field.Name,
+				DisplayName:  displayName,
 				MethodGroups: methodGroups,
 			}
 
