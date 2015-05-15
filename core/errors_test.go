@@ -1,7 +1,8 @@
-package core
+package core_test
 
 import (
 	"errors"
+	. "github.com/typerandom/validator/core"
 	"github.com/typerandom/validator/core/parser"
 	"testing"
 )

@@ -1,7 +1,8 @@
-package core
+package testing
 
 import (
 	"errors"
+	"github.com/typerandom/validator/core"
 	"reflect"
 )
 
@@ -12,7 +13,14 @@ type testContext struct {
 	originalKind reflect.Kind
 	isNil        bool
 
-	field *ReflectedField
+	field *core.ReflectedField
+}
+
+func IsSyntaxValid(value interface{}) error {
+	if _, err := core.GetStructFields(value, "validator", ""); err != nil {
+		return err
+	}
+	return nil
 }
 
 func NewTestContext(value interface{}) *testContext {
@@ -42,7 +50,7 @@ func (this *testContext) Value() interface{} {
 }
 
 func (this *testContext) SetValue(value interface{}) error {
-	normalized, err := Normalize(value)
+	normalized, err := core.Normalize(value)
 
 	if err != nil {
 		return err
@@ -55,11 +63,11 @@ func (this *testContext) SetValue(value interface{}) error {
 	return nil
 }
 
-func (this *testContext) SetField(field *ReflectedField) {
+func (this *testContext) SetField(field *core.ReflectedField) {
 	this.field = field
 }
 
-func (this *testContext) Field() *ReflectedField {
+func (this *testContext) Field() *core.ReflectedField {
 	return this.field
 }
 
