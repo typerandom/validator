@@ -12,6 +12,7 @@ func RegisterDefaultLocale(lc *core.Locale) {
 	lc.Set("arguments.singleRequired", "Validator '{validator}' on field '{field}' requires a single argument.")
 	lc.Set("arguments.oneOrMoreRequired", "Validator '{validator}' on field '{field}' requires at least one argument.")
 	lc.Set("nil.isNotNil", "{field} is not nil.")
+	lc.Set("not.cannotBeValue", "{field} cannot be %v.")
 	lc.Set("empty.isNotEmpty", "{field} is not empty.")
 	lc.Set("notEmpty.cannotBeEmpty", "{field} cannot be empty.")
 	lc.Set("min.cannotBeShorterThan", "{field} cannot be shorter than %v characters.")

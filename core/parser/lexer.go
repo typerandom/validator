@@ -119,7 +119,7 @@ TEXT_SCAN:
 	switch scanner.text() {
 	case "true", "false":
 		scanner.emit(TOKEN_ARG_BOOLEAN)
-	case "nil":
+	case "nil", "null":
 		scanner.emit(TOKEN_ARG_NIL)
 	default:
 		scanner.emit(TOKEN_ARG_STRING)
