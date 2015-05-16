@@ -97,6 +97,18 @@ func (this ErrorList) WithField(fieldName string) ErrorList {
 	return errs
 }
 
+func (this ErrorList) WithValidator(validatorTagName string) ErrorList {
+	var errs ErrorList
+
+	for _, err := range this {
+		if err.IsFieldError() && err.GetValidatorName() == validatorTagName {
+			errs.Add(err)
+		}
+	}
+
+	return errs
+}
+
 func (this ErrorList) Any() bool {
 	return len(this) > 0
 }
