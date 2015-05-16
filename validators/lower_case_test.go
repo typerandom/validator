@@ -2,7 +2,7 @@ package validators_test
 
 import (
 	"errors"
-	. "github.com/typerandom/validator/testing"
+	"github.com/typerandom/validator/core"
 	. "github.com/typerandom/validator/validators"
 	"testing"
 )
@@ -10,7 +10,7 @@ import (
 func TestThatLowerCaseValidatorFailsForInvalidOptions(t *testing.T) {
 	var dummy string
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{"123"}
 
 	err := LowerCaseValidator(ctx, opts)
@@ -27,7 +27,7 @@ func TestThatLowerCaseValidatorFailsForInvalidOptions(t *testing.T) {
 func TestThatLowerCaseValidatorSucceedsForEmptyString(t *testing.T) {
 	dummy := ""
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	err := LowerCaseValidator(ctx, []interface{}{})
 
 	if err != nil {
@@ -38,7 +38,7 @@ func TestThatLowerCaseValidatorSucceedsForEmptyString(t *testing.T) {
 func TestThatLowerCaseValidatorSucceedsForNilString(t *testing.T) {
 	var dummy *string
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	err := LowerCaseValidator(ctx, []interface{}{})
 
 	if err != nil {
@@ -49,7 +49,7 @@ func TestThatLowerCaseValidatorSucceedsForNilString(t *testing.T) {
 func TestThatLowerCaseValidatorFailsForUpperCaseString(t *testing.T) {
 	dummy := "ABC"
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	err := LowerCaseValidator(ctx, []interface{}{})
 
 	if err == nil {
@@ -64,7 +64,7 @@ func TestThatLowerCaseValidatorFailsForUpperCaseString(t *testing.T) {
 func TestThatLowerCaseValidatorFailsForMixedCaseString(t *testing.T) {
 	dummy := "aBc"
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	err := LowerCaseValidator(ctx, []interface{}{})
 
 	if err == nil {
@@ -79,7 +79,7 @@ func TestThatLowerCaseValidatorFailsForMixedCaseString(t *testing.T) {
 func TestThatLowerCaseValidatorSucceedsForStringWithoutCase(t *testing.T) {
 	dummy := "123"
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	err := LowerCaseValidator(ctx, []interface{}{})
 
 	if err != nil {
@@ -90,7 +90,7 @@ func TestThatLowerCaseValidatorSucceedsForStringWithoutCase(t *testing.T) {
 func TestThatLowerCaseValidatorSucceedsForLowerCaseString(t *testing.T) {
 	dummy := "abc"
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	err := LowerCaseValidator(ctx, []interface{}{})
 
 	if err != nil {
@@ -101,7 +101,7 @@ func TestThatLowerCaseValidatorSucceedsForLowerCaseString(t *testing.T) {
 func TestThatLowerCaseValidatorFailsForUnsupportedValueType(t *testing.T) {
 	type Dummy struct{}
 
-	ctx := NewTestContext(&Dummy{})
+	ctx := core.NewTestContext(&Dummy{})
 	err := LowerCaseValidator(ctx, []interface{}{})
 
 	if err.Error() != "type.unsupported" {

@@ -2,7 +2,7 @@ package validators_test
 
 import (
 	"errors"
-	. "github.com/typerandom/validator/testing"
+	"github.com/typerandom/validator/core"
 	. "github.com/typerandom/validator/validators"
 	"testing"
 )
@@ -10,7 +10,7 @@ import (
 func TestThatMaxValidatorFailsForInvalidOptions(t *testing.T) {
 	dummy := 100
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	err := MaxValidator(ctx, []interface{}{})
 
 	if err == nil {
@@ -43,7 +43,7 @@ func TestThatMaxValidatorFailsForInvalidOptions(t *testing.T) {
 }
 
 func testThatMaxValidatorFailsForValueOverLimit(t *testing.T, limit float64, dummy interface{}, expectedErr string) {
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{limit}
 
 	err := MaxValidator(ctx, opts)
@@ -58,7 +58,7 @@ func testThatMaxValidatorFailsForValueOverLimit(t *testing.T, limit float64, dum
 }
 
 func testThatMaxValidatorSucceedsForValueOnLimit(t *testing.T, limit float64, dummy interface{}) {
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{limit}
 
 	if err := MaxValidator(ctx, opts); err != nil {
@@ -67,7 +67,7 @@ func testThatMaxValidatorSucceedsForValueOnLimit(t *testing.T, limit float64, du
 }
 
 func testThatMaxValidatorSucceedsForValueUnderLimit(t *testing.T, limit float64, dummy interface{}) {
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{limit}
 
 	if err := MaxValidator(ctx, opts); err != nil {

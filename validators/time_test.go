@@ -1,7 +1,7 @@
 package validators_test
 
 import (
-	. "github.com/typerandom/validator/testing"
+	"github.com/typerandom/validator/core"
 	. "github.com/typerandom/validator/validators"
 	"testing"
 	"time"
@@ -10,7 +10,7 @@ import (
 func TestThatTimeValidatorFailsForInvalidOptions(t *testing.T) {
 	dummy := "100"
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	err := TimeValidator(ctx, []interface{}{})
 
 	if err == nil {
@@ -35,7 +35,7 @@ func TestThatTimeValidatorFailsForInvalidOptions(t *testing.T) {
 func TestThatTimeValidatorSucceedsForValidStringTimeValue(t *testing.T) {
 	dummy := "2013-06-05T14:10:43.678Z"
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{time.RFC3339Nano}
 
 	if err := TimeValidator(ctx, opts); err != nil {
@@ -46,7 +46,7 @@ func TestThatTimeValidatorSucceedsForValidStringTimeValue(t *testing.T) {
 func TestThatTimeValidatorFailsForInvalidNilStringValue(t *testing.T) {
 	var dummy *string
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{time.RFC3339Nano}
 
 	err := TimeValidator(ctx, opts)
@@ -63,7 +63,7 @@ func TestThatTimeValidatorFailsForInvalidNilStringValue(t *testing.T) {
 func TestThatTimeValidatorFailsForInvalidStringTimeValue(t *testing.T) {
 	dummy := "2013-06-05INVALID14:10:43"
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{time.RFC3339Nano}
 
 	err := TimeValidator(ctx, opts)
@@ -80,7 +80,7 @@ func TestThatTimeValidatorFailsForInvalidStringTimeValue(t *testing.T) {
 func TestThatTimeValidatorSucceedsForTimeValue(t *testing.T) {
 	dummy := time.Now()
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{}
 
 	if err := TimeValidator(ctx, opts); err != nil {
@@ -91,7 +91,7 @@ func TestThatTimeValidatorSucceedsForTimeValue(t *testing.T) {
 func TestThatTimeValidatorFailsForUnsupportedValueType(t *testing.T) {
 	type Dummy struct{}
 
-	ctx := NewTestContext(&Dummy{})
+	ctx := core.NewTestContext(&Dummy{})
 	err := TimeValidator(ctx, []interface{}{})
 
 	if err.Error() != "type.unsupported" {

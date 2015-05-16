@@ -1,7 +1,7 @@
 package validators_test
 
 import (
-	. "github.com/typerandom/validator/testing"
+	"github.com/typerandom/validator/core"
 	. "github.com/typerandom/validator/validators"
 	"testing"
 )
@@ -9,7 +9,7 @@ import (
 func TestThatRegexpValidatorFailsForInvalidOptions(t *testing.T) {
 	dummy := 100
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	err := RegexpValidator(ctx, []interface{}{})
 
 	if err == nil {
@@ -34,7 +34,7 @@ func TestThatRegexpValidatorFailsForInvalidOptions(t *testing.T) {
 func TestThatRegexpValidatorSucceedsForMatchingStringValue(t *testing.T) {
 	dummy := "1test."
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{"^\\dtest\\.$"}
 
 	if err := RegexpValidator(ctx, opts); err != nil {
@@ -45,7 +45,7 @@ func TestThatRegexpValidatorSucceedsForMatchingStringValue(t *testing.T) {
 func TestThatRegexpValidatorFailsForNonMatchingStringValue(t *testing.T) {
 	dummy := "1test"
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{"^\\dtest\\.$"}
 
 	err := RegexpValidator(ctx, opts)
@@ -62,7 +62,7 @@ func TestThatRegexpValidatorFailsForNonMatchingStringValue(t *testing.T) {
 func TestThatRegexpValidatorFailsForStringNilValue(t *testing.T) {
 	var dummy *string
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{"^\\dtest\\.$"}
 
 	err := RegexpValidator(ctx, opts)
@@ -79,7 +79,7 @@ func TestThatRegexpValidatorFailsForStringNilValue(t *testing.T) {
 func TestThatRegexpValidatorFailsForUnsupportedValueType(t *testing.T) {
 	type Dummy struct{}
 
-	ctx := NewTestContext(&Dummy{})
+	ctx := core.NewTestContext(&Dummy{})
 	err := NumericValidator(ctx, []interface{}{})
 
 	if err.Error() != "type.unsupported" {

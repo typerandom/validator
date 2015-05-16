@@ -2,7 +2,7 @@ package validators_test
 
 import (
 	"fmt"
-	. "github.com/typerandom/validator/testing"
+	"github.com/typerandom/validator/core"
 	. "github.com/typerandom/validator/validators"
 	"testing"
 )
@@ -10,7 +10,7 @@ import (
 func TestThatContainValidatorFailsForInvalidOptions(t *testing.T) {
 	dummy := 100
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	err := ContainValidator(ctx, []interface{}{})
 
 	if err == nil {
@@ -33,7 +33,7 @@ func TestThatContainValidatorFailsForInvalidOptions(t *testing.T) {
 }
 
 func testThatContainValidatorSucceedsForExistingValue(t *testing.T, expect interface{}, dummy interface{}) {
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{fmt.Sprintf("%v", expect)}
 
 	if err := ContainValidator(ctx, opts); err != nil {
@@ -42,7 +42,7 @@ func testThatContainValidatorSucceedsForExistingValue(t *testing.T, expect inter
 }
 
 func testThatContainValidatorFailsForMissingValue(t *testing.T, expect interface{}, dummy interface{}) {
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{fmt.Sprintf("%v", expect)}
 
 	err := ContainValidator(ctx, opts)
@@ -72,7 +72,7 @@ func TestThatContainValidatorFailsForMissingStringValue(t *testing.T) {
 func TestThatContainValidatorFailsForUnsupportedValueType(t *testing.T) {
 	type Dummy struct{}
 
-	ctx := NewTestContext(&Dummy{})
+	ctx := core.NewTestContext(&Dummy{})
 	err := ContainValidator(ctx, []interface{}{"123"})
 
 	if err.Error() != "type.unsupported" {

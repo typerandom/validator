@@ -3,7 +3,6 @@ package validators_test
 import (
 	"errors"
 	"github.com/typerandom/validator/core"
-	. "github.com/typerandom/validator/testing"
 	. "github.com/typerandom/validator/validators"
 	"testing"
 )
@@ -11,7 +10,7 @@ import (
 func TestThatNumericValidatorFailsForInvalidOptions(t *testing.T) {
 	var dummy *string
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{"123"}
 
 	err := NumericValidator(ctx, opts)
@@ -26,7 +25,7 @@ func TestThatNumericValidatorFailsForInvalidOptions(t *testing.T) {
 }
 
 func testThatNumericValidatorSucceedsForValue(t *testing.T, value interface{}) core.ValidatorContext {
-	ctx := NewTestContext(value)
+	ctx := core.NewTestContext(value)
 	opts := []interface{}{}
 
 	if err := NumericValidator(ctx, opts); err != nil {
@@ -71,7 +70,7 @@ func TestThatNumericValidatorSucceedsForFloatStringValue(t *testing.T) {
 func TestThatNumericValidatorFailsForUnsupportedValueType(t *testing.T) {
 	type Dummy struct{}
 
-	ctx := NewTestContext(&Dummy{})
+	ctx := core.NewTestContext(&Dummy{})
 	err := NumericValidator(ctx, []interface{}{})
 
 	if err.Error() != "type.unsupported" {

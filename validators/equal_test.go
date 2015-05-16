@@ -2,7 +2,7 @@ package validators_test
 
 import (
 	"fmt"
-	. "github.com/typerandom/validator/testing"
+	"github.com/typerandom/validator/core"
 	. "github.com/typerandom/validator/validators"
 	"testing"
 )
@@ -10,7 +10,7 @@ import (
 func TestThatEqualValidatorFailsForInvalidOptions(t *testing.T) {
 	dummy := 100
 
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	err := EqualValidator(ctx, []interface{}{})
 
 	if err == nil {
@@ -33,7 +33,7 @@ func TestThatEqualValidatorFailsForInvalidOptions(t *testing.T) {
 }
 
 func testThatEqualValidatorSucceedsForEqualValue(t *testing.T, expect interface{}, dummy interface{}) {
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{fmt.Sprintf("%v", expect)}
 
 	if err := EqualValidator(ctx, opts); err != nil {
@@ -42,7 +42,7 @@ func testThatEqualValidatorSucceedsForEqualValue(t *testing.T, expect interface{
 }
 
 func testThatEqualValidatorFailsForNonEqualValue(t *testing.T, expect interface{}, dummy interface{}) {
-	ctx := NewTestContext(dummy)
+	ctx := core.NewTestContext(dummy)
 	opts := []interface{}{fmt.Sprintf("%v", expect)}
 
 	err := EqualValidator(ctx, opts)
@@ -103,7 +103,7 @@ func TestThatEqualValidatorFailsForNonEqualBoolValue(t *testing.T) {
 func TestThatEqualValidatorFailsForUnsupportedValueType(t *testing.T) {
 	type Dummy struct{}
 
-	ctx := NewTestContext(&Dummy{})
+	ctx := core.NewTestContext(&Dummy{})
 	err := EqualValidator(ctx, []interface{}{"123"})
 
 	if err.Error() != "type.unsupported" {
