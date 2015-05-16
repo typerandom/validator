@@ -23,11 +23,11 @@ And then just import the package into your own code.
 
 ## Getting started
 
-1. Add [`validate` tags](https://github.com/typerandom/validator/wiki/Tagging) to the structure that you want to validate. See [Tagging](https://github.com/typerandom/validator/wiki/Tagging) for more details and [Validators](https://github.com/typerandom/validator/wiki/Validators) for what validators to use.
+1. Add `validate` tags to the structure that you want to validate. See [Tagging](https://github.com/typerandom/validator/wiki/Tagging) and [Validators](https://github.com/typerandom/validator/wiki/Validators) for more details.
 2. Call `errors := validator.Validate(objectWithValidateTags)`.
 3. Call `errors.Any()` to check if there are any errors.
-4. If there are errors, handle them. Or use `errors.PrintAll()` if you're debugging.
-5. Questions? Check out [the wiki](https://github.com/typerandom/validator/wiki).
+4. If there are errors, handle them. Or use `errors.PrintAll()` to print them to console (for debugging).
+5. Questions? Check out the [wiki](https://github.com/typerandom/validator/wiki).
 
 ## Example
 
