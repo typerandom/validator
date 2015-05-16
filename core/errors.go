@@ -101,11 +101,15 @@ func (this ErrorList) Any() bool {
 	return len(this) > 0
 }
 
-func (this ErrorList) First() error {
+func (this ErrorList) First() *Error {
 	if this.Any() {
 		return this[0]
 	}
 	return nil
+}
+
+func (this ErrorList) Length() int {
+	return len(this)
 }
 
 func (this ErrorList) PrintAll() {
