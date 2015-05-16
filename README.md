@@ -6,8 +6,9 @@ A powerful validation library for Go.
 
 * Tag syntax that allows for typed parameters and multiple validation sets.
 * Validation of deeply nested structures.
-* Custom validators.
+* Extensive list of [built-in validators](https://github.com/typerandom/validator/wiki/Validators).
 * Localized error messages.
+* Custom validators.
 
 ## Install
 
