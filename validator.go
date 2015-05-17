@@ -20,6 +20,9 @@ type Validator interface {
 
 	// Validate validates fields of a structure, or structures of a map, slice or array.
 	Validate(value interface{}) core.ErrorList
+
+	// Copy deep copies the validator and returns a new instance.
+	Copy() Validator
 }
 
 // Validator represents a validator with it's own configuration set.
@@ -43,12 +46,26 @@ func newValidator() *validator {
 	return validator
 }
 
+func (this *validator) Copy() Validator {
+	newValidator := newValidator()
+
+	newValidator.displayNameTag = this.displayNameTag
+	newValidator.locale.Messages = this.locale.Messages
+	newValidator.registry = this.registry
+
+	return newValidator
+}
+
 func (this *validator) Locale() *core.Locale {
 	return this.locale
 }
 
 func (this *validator) SetDisplayNameTag(tagName string) {
-	this.displayNameTag = &tagName
+	if len(tagName) == 0 {
+		this.displayNameTag = nil
+	} else {
+		this.displayNameTag = &tagName
+	}
 }
 
 func (this *validator) Register(name string, validator core.ValidatorFn) {

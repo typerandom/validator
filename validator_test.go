@@ -38,6 +38,23 @@ func TestThatValidatorNewReturnsNewValidator(t *testing.T) {
 	}
 }
 
+func TestThatValidatorCopyReturnsNewCopyOfValidator(t *testing.T) {
+	validatorA := New()
+	validatorB := validatorA.Copy()
+
+	if validatorA == nil || validatorB == nil {
+		t.Fatalf("Expected non nil value, got nil value.")
+	}
+
+	if validatorA == validatorB {
+		t.Fatalf("Expected different validators, got same.")
+	}
+
+	if validatorA.Locale() == validatorB.Locale() {
+		t.Fatalf("Expected different locales, got same.")
+	}
+}
+
 func TestThatValidatorCanRegisterAndValidateCustomFunc(t *testing.T) {
 	Default().Locale().Set("test.isNotTest", "test.isNotTest")
 
