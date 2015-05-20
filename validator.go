@@ -50,7 +50,7 @@ func (this *validator) Copy() Validator {
 	newValidator := newValidator()
 
 	newValidator.displayNameTag = this.displayNameTag
-	newValidator.locale.Messages = this.locale.Messages
+	newValidator.locale = this.locale.Copy()
 	newValidator.registry = this.registry
 
 	return newValidator

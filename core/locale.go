@@ -7,21 +7,21 @@ import (
 )
 
 type Locale struct {
-	Messages map[string]string
+	messages map[string]string
 }
 
 func NewLocale() *Locale {
 	return &Locale{
-		Messages: make(map[string]string),
+		messages: make(map[string]string),
 	}
 }
 
 func (this *Locale) Set(key string, value string) {
-	this.Messages[key] = value
+	this.messages[key] = value
 }
 
 func (this *Locale) Get(key string) (string, error) {
-	if val, ok := this.Messages[key]; ok {
+	if val, ok := this.messages[key]; ok {
 		return val, nil
 	}
 	return "", errors.New("Locale " + key + " does not exist.")
@@ -45,4 +45,10 @@ func (this *Locale) LoadJson(filePath string) error {
 	}
 
 	return nil
+}
+
+func (this *Locale) Copy() *Locale {
+	return &Locale{
+		messages: this.messages,
+	}
 }

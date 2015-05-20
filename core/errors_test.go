@@ -163,6 +163,6 @@ func TestThatErrorListForFieldOnlyReturnsTheSpecifiedField(t *testing.T) {
 	}
 
 	if len(userFieldFirstNameErrors) != 1 {
-		t.Fatal("Expected one error, but got %d.", len(userFieldFirstNameErrors))
+		t.Fatalf("Expected one error, but got %d.", len(userFieldFirstNameErrors))
 	}
 }
