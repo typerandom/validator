@@ -115,3 +115,34 @@ func TestThatValidatorCanValidateStructValue(t *testing.T) {
 		t.Fatalf("Expected error, didn't get any")
 	}
 }
+
+func TestThatValidatorDoesntValidateNilStructValue(t *testing.T) {
+	type DummyStruct struct {
+		Value string `validate:"not_empty"`
+	}
+
+	type Dummy struct {
+		NonNilStruct *DummyStruct
+		NilStruct    *DummyStruct
+	}
+
+	dummyValue := &Dummy{
+		NonNilStruct: &DummyStruct{},
+	}
+
+	errs := Validate(dummyValue)
+
+	if !errs.Any() {
+		t.Fatal("Expected errors, but didn't get any.")
+	}
+
+	if errs.Length() != 1 {
+		t.Fatalf("Expected 1 error, but got %d.", errs.Length())
+	}
+
+	firstError := errs.First()
+
+	if firstError.String() != "NonNilStruct.Value cannot be empty." {
+		t.Fatalf("Expected error to be 'NonNilStruct.Value cannot be empty.' but it was '%s'.", firstError.String())
+	}
+}

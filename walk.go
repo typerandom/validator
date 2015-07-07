@@ -115,7 +115,9 @@ func walkValidate(context *context, value interface{}, parentField *core.Reflect
 	case reflect.Map:
 		walkValidateMap(context, normalized, parentField)
 	case reflect.Struct:
-		walkValidateStruct(context, normalized, parentField)
+		if !normalized.IsNil {
+			walkValidateStruct(context, normalized, parentField)
+		}
 	default:
 		context.errors.AddPlain(errors.New("Unable to directly validate type '" + normalized.OriginalKind.String() + "'."))
 	}
